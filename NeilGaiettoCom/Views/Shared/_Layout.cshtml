@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<!-- Meta -->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width" />
+<!-- Stylesheets -->
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+<title>@ViewBag.Title</title>
+</head>
+
+<body>
+
+<div class="columnNav">
+    <header class="header">
+        <a class="myName" href="@Url.Action("","Home")"><span class="firstName">NEIL</span><br /><span class="lastName">GAIETTO</span></a>
+                <ul class="social">
+            <li class="twitter"><a href="javascript:;" title="Twitter"></a></li>
+            <li class="facebook"><a href="javascript:;" title="Facebook"></a></li>
+            <li class="linkedin"><a href="javascript:;" title="LinkedIn"></a></li>
+            <li class="google"><a href="javascript:;" title="Google+"></a></li>
+        </ul>
+    </header>
+    <nav class="nav">
+        <ul>
+            <li>@Html.ActionLink("Home","", "Home")</li>
+            <li>@Html.ActionLink("Work","", "Work")</li>
+            <li>@Html.ActionLink("About","", "About")</li>
+            <li>@Html.ActionLink("Blog","", "Blog")</li>
+            <li>@Html.ActionLink("Contact","", "Contact")</li>
+        </ul>
+    </nav>
+    <footer class="footer">
+        <span class="copyright">&copy;@DateTime.Now.Year</span> <a href="javascript:;">Neil Gaietto</a>. All Rights Reserved. <a href="https://github.com/neilgaietto/Neil-Gaietto-Portfolio">Source</a>
+    </footer>
+</div>
+<div class="columnContent">
+    <h1 class="pageTitle">@ViewBag.Title</h1>
+    <div class="content">
+            @RenderBody()
+
+
+    </div>
+</div>
+    @Scripts.Render("~/bundles/jquery")
+    @RenderSection("scripts", required: false)
+</body>
+</html>
