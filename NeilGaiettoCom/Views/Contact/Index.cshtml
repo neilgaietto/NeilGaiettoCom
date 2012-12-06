@@ -1,4 +1,22 @@
-﻿@{
-    ViewBag.Title = "Contact";
+﻿@model NeilGaiettoCom.Models.ContactForm
+@{
+    ViewBag.Title = "Contact Me";
 }
+<div>
+    <fieldset>
+        <legend>Contact Me</legend>
+        @using (Html.BeginForm())
+        {
+            <div>@Html.LabelFor(f => f.FullName)@Html.TextBoxFor(model => model.FullName)
+            </div>
+            <div>@Html.LabelFor(f => f.Email)@Html.TextBoxFor(model => model.Email)
+            </div>
+            <div>@Html.LabelFor(f => f.Message)@Html.TextBoxFor(model => model.Message)
+            </div>
+            <div>
+                <input type="submit" value="Send" />
+            </div>
+        }
+    </fieldset>
+</div>
 

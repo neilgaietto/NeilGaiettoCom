@@ -128,9 +128,13 @@
     <Compile Include="Controllers\ContactController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\WorkController.cs" />
+    <Compile Include="Data\App.cs" />
+    <Compile Include="Data\CacheBucket.cs" />
+    <Compile Include="Data\UserSession.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\ContactForm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -230,9 +234,7 @@
     <Content Include="Views\Contact\Index.cshtml" />
     <Content Include="Views\Blog\Index.cshtml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="packages.config">
       <SubType>Designer</SubType>

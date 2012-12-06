@@ -11,10 +11,16 @@ namespace NeilGaiettoCom.Controllers
         //
         // GET: /Contact/
 
+
         public ActionResult Index()
+        {
+            return View(new Models.ContactForm());
+        }
+
+        [HttpPost]
+        public ActionResult Index(Models.ContactForm contactForm)
         {
             return View();
         }
-
     }
 }
