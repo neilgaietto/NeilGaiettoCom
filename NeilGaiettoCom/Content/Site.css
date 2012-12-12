@@ -1,21 +1,11 @@
-﻿/* color scheme http://colorschemedesigner.com/#4W32P0RQYw0w0 */
-/* Base Classes */
-html {
+﻿html {
 }
 
+/* color scheme http://colorschemedesigner.com/#4W32P0RQYw0w0 */
+
 body {
-     /*background-color: rgb(227,227,221);*/
+    background-color:rgb(41,57,85);
     font-family: Verdana, Geneva, sans-serif;
-    background-color: #FFFCF8;
-    background-attachment: fixed;
-    background-clip: border-box;
-    background-color: #201303;
-    background-image: url("Images/bg.jpg");
-    background-origin: padding-box;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    
 }
 
 a:link, a:visited, a:active {
@@ -34,63 +24,82 @@ h2 {
 }
 
 hr {
+     border: 0; 
+     height: 1px; 
+     background-color:rgb(54,54,57);
 }
 
-.clearboth {
-    clear: both;
+.clearboth {clear: both;}
+
+
+.column-nav {
+    
+    background-color:rgb(22,32,48);
+    color:rgb(255,255,255);
+    padding: 20px 20px 0 20px;
+    margin: 0 0 0 0;
+    width: 200px;
+    height: 100%;
 }
-/* base */
-.columnNav {
-    float:left;
-    margin: 5px 0 0 5px;
-}
-.columnContent {
-    float:left;
+    .column-nav a {
+        color:rgb(255,255,255);
+        text-decoration:none;
+    }
+    .column-nav .nav {
+        padding: 20px;
+    }
+    .column-nav .nav ul {
+        padding: 0 0 0 0;
+        list-style: none;
+    }
+        .column-nav .nav ul li {
+            padding: 0 0 0 0;
+        }
+        .column-nav .nav .legend {
+            text-transform:uppercase;
+        }
+
+
+
+.column-content {
+    background-color:rgb(255,255,255);
     width:500px;
+    height: 100%;
 }
 
 /* HEADER */
 .header {
-    float: left;
+    
 }
 
-.myName {
-    color: #A7A8AA;
-    float: left;
+.site-logo {
+    color:rgb(255,255,255);
     text-decoration: none;
     width: 200px;
-    border-radius: 4em 1em 4em 1em;
-    background-color: #487293;
-    text-shadow: 0 0 2px #944894;
+    text-transform:uppercase;
 }
 
-    .myName .firstName {
+    .site-logo .first-name {
         font-weight: bold;
         font-size: 72px;
         line-height: 51px;
     }
 
-    .myName .lastName {
+    .site-logo .last-name {
         font-size: 43px;
     }
 
-.pageTitle {
+.page-title {
     color: #7D7D7D;
-    float: left;
     font-size: 36px;
 
 }
 
 
 
-.nav {
-    float: left;
+/*.nav {
     width: 200px;
     margin-top: 5px;
-    background-color: #E3E3DD;
-    border-radius: 1em 1em 1em 1em;
-    padding: 16px 0 10px 0;
-    clear: both;
 }
 
     .nav a {
@@ -99,11 +108,11 @@ hr {
         width: 100%;
         display: block;
         font-weight: bold;
-        color: #A68151;
-        
-    }
 
-    .nav li {
+        
+    }*/
+
+    /*.nav li {
         padding: 0 0 0 12px;
         height: 26px;
         position: relative;
@@ -119,7 +128,7 @@ hr {
         .nav li ul {
             display: none;
             position: absolute;
-        }
+        }*/
 
 
 /*     .nav li:hover ul {
@@ -128,12 +137,11 @@ hr {
 
 
 .social {
-    clear: both;
-    float: left;
+
     margin-top: 5px;
 }
     .social li {
-        float: left;
+        float:left;
         margin: 0 8px;
     }
     .social li a {
@@ -172,7 +180,7 @@ hr {
             
 
 .content {
-    float: left;
+    
 }
 
 .footer {
@@ -184,12 +192,10 @@ hr {
     position: fixed;
     padding: 0 4px;
     font-size: 10px;
-    float: left;
-    clear: both;
 }
     .footer a {
         text-decoration: none;
         color: #AAA7AA;
     }
 
-.nothing{}
+
