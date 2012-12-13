@@ -45,6 +45,8 @@
     <Reference Include="System.Data.Entity" />
     <Reference Include="System.Data.SqlServerCe, Version=4.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -130,6 +132,27 @@
     <Compile Include="Controllers\WorkController.cs" />
     <Compile Include="Data\App.cs" />
     <Compile Include="Data\CacheBucket.cs" />
+    <Compile Include="Data\Post.cs">
+      <DependentUpon>SiteDB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Data\PostTag.cs">
+      <DependentUpon>SiteDB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Data\SiteDB.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SiteDB.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Data\SiteDB.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SiteDB.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Data\SiteDB.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SiteDB.edmx</DependentUpon>
+    </Compile>
     <Compile Include="Data\UserSession.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -138,7 +161,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Data\dbCom.sdf" />
     <Content Include="Content\Images\bg.jpg" />
     <Content Include="Content\Images\bg2.jpg" />
     <Content Include="Content\Images\SocialIcons.png" />
@@ -199,6 +221,23 @@
     <Content Include="Content\themes\base\minified\jquery.ui.theme.min.css" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <EntityDeploy Include="Data\SiteDB.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>SiteDB.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <Content Include="Data\SiteDB.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>SiteDB.edmx</DependentUpon>
+      <LastGenOutput>SiteDB.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="Data\SiteDB.edmx.diagram">
+      <DependentUpon>SiteDB.edmx</DependentUpon>
+    </Content>
+    <Content Include="Data\SiteDB.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>SiteDB.edmx</DependentUpon>
+      <LastGenOutput>SiteDB.cs</LastGenOutput>
+    </Content>
     <None Include="Scripts\jquery-1.7.1.intellisense.js" />
     <Content Include="Scripts\jquery-1.7.1.js" />
     <Content Include="Scripts\jquery-1.7.1.min.js" />
@@ -234,11 +273,16 @@
     <Content Include="Views\Contact\Index.cshtml" />
     <Content Include="Views\Blog\Index.cshtml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config">
       <SubType>Designer</SubType>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
