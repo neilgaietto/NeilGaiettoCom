@@ -1,9 +1,11 @@
 ﻿html {
+    height:100%;
 }
 
 /* color scheme http://colorschemedesigner.com/#4W32P0RQYw0w0 */
 
 body {
+    height:100%;
     background-color:rgb(41,57,85);
     font-family: Verdana, Geneva, sans-serif;
 }
@@ -31,23 +33,24 @@ hr {
 
 .clearboth {clear: both;}
 
-
+/* nav */
 .column-nav {
     
     background-color:rgb(22,32,48);
     color:rgb(255,255,255);
-    padding: 20px 20px 0 20px;
     margin: 0 0 0 0;
     width: 200px;
     height: 100%;
+    float:left;
 }
     .column-nav a {
         color:rgb(255,255,255);
         text-decoration:none;
     }
     .column-nav .nav {
-        padding: 20px;
+        padding: 10px;
     }
+
     .column-nav .nav ul {
         padding: 0 0 0 0;
         list-style: none;
@@ -55,6 +58,14 @@ hr {
         .column-nav .nav ul li {
             padding: 0 0 0 0;
         }
+        .column-nav .nav ul li :hover {
+            border-left: 10px solid #fff;
+            margin-left: -10px;
+        }
+            .column-nav .nav ul li a {
+                width: 100%;
+                display: block;
+            }
         .column-nav .nav .legend {
             text-transform:uppercase;
         }
@@ -63,11 +74,11 @@ hr {
 
 .column-content {
     background-color:rgb(255,255,255);
-    width:500px;
     height: 100%;
+    float:left;
 }
 
-/* HEADER */
+/* Header */
 .header {
     
 }
@@ -97,92 +108,14 @@ hr {
 
 
 
-/*.nav {
-    width: 200px;
-    margin-top: 5px;
-}
-
-    .nav a {
-        text-decoration: none;
-        height: 100%;
-        width: 100%;
-        display: block;
-        font-weight: bold;
-
-        
-    }*/
-
-    /*.nav li {
-        padding: 0 0 0 12px;
-        height: 26px;
-        position: relative;
-        border-left: 5px solid #E3E3DD;
-    }
-
-        .nav li:hover {
-            border-right: 5px solid #944894;
-            border-left: 5px solid #E3E3DD;
-            background-color: #AAA7AA;
-        }
-
-        .nav li ul {
-            display: none;
-            position: absolute;
-        }*/
-
-
-/*     .nav li:hover ul {
-            display: block;
-        }*/
-
-
-.social {
-
-    margin-top: 5px;
-}
-    .social li {
-        float:left;
-        margin: 0 8px;
-    }
-    .social li a {
-        height: 32px;
-        width: 33px;
-        display: block;
-    }
-        .social li.twitter a {
-            background: url("Images/socialicons.png") no-repeat scroll 0px 0px transparent;
-        }
-            .social li.twitter a:hover {
-                background-position: 0px -32px;
-            }
-            
-        .social li.google a{
-            background: url("Images/socialicons.png") no-repeat scroll -33px 0px transparent;
-        }
-            .social li.google a:hover {
-                background-position: -33px -32px;
-            }
-
-        .social li.linkedin a{
-            background: url("Images/socialicons.png") no-repeat scroll -65px 0px transparent;
-        }
-            .social li.linkedin:hover a{
-                background-position: -65px -32px;
-            }
-            
-        .social li.facebook a{
-            background: url("Images/socialicons.png") no-repeat scroll -98px 0px transparent;
-        }
-            .social li.facebook:hover a{
-                background-position: -98px -32px;
-            }
-            
             
 
 .content {
+
     
 }
 
+/* Footer */
 .footer {
     background-color: #487293;
     border-radius: 10px 10px 0 0;
@@ -199,3 +132,44 @@ hr {
     }
 
 
+.social {
+
+margin-top: 5px;
+}
+.social li {
+    float:left;
+    margin: 0 8px;
+}
+.social li a {
+    height: 32px;
+    width: 33px;
+    display: block;
+}
+    .social li.twitter a {
+        background: url("Images/socialicons.png") no-repeat scroll 0px 0px transparent;
+    }
+        .social li.twitter a:hover {
+            background-position: 0px -32px;
+        }
+            
+    .social li.google a{
+        background: url("Images/socialicons.png") no-repeat scroll -33px 0px transparent;
+    }
+        .social li.google a:hover {
+            background-position: -33px -32px;
+        }
+
+    .social li.linkedin a{
+        background: url("Images/socialicons.png") no-repeat scroll -65px 0px transparent;
+    }
+        .social li.linkedin:hover a{
+            background-position: -65px -32px;
+        }
+            
+    .social li.facebook a{
+        background: url("Images/socialicons.png") no-repeat scroll -98px 0px transparent;
+    }
+        .social li.facebook:hover a{
+            background-position: -98px -32px;
+        }
+            

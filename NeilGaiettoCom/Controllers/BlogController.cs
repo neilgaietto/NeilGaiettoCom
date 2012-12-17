@@ -13,7 +13,10 @@ namespace NeilGaiettoCom.Controllers
 
         public ActionResult Index()
         {
-            return View();
+            Models.Post post = new Models.Post();
+            post.Get(1);
+
+            return View(post);
         }
 
     }
