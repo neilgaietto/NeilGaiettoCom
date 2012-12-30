@@ -8,6 +8,7 @@
         <EntityTypeShape EntityType="NeilDBModel.Post" Width="1.5" PointX="1.9564970889857491" PointY="9.26224720909365" />
         <EntityTypeShape EntityType="NeilDBModel.PostTag" Width="1.5" PointX="0.77539530060039608" PointY="0.36393156664629073" />
         <AssociationConnector Association="NeilDBModel.FK_PostTags_0" />
+        <EntityTypeShape EntityType="NeilDBModel.PageVisit" Width="1.5" PointX="11.853924404761719" PointY="21.124851132335536" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

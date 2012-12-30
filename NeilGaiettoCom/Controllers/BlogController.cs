@@ -19,5 +19,10 @@ namespace NeilGaiettoCom.Controllers
             return View(post);
         }
 
+        public ActionResult PostDetails(string PostID)
+        {
+
+            return View();
+        }
     }
 }

@@ -23,5 +23,25 @@ namespace NeilGaiettoCom
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
+
+        protected void Application_BeginRequest(object sender, EventArgs e)
+        {
+            Data.App.PageVisited(Request.Path, Request.UserHostAddress);
+        }
+        protected void Application_EndRequest(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void Application_Error(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void Session_Start(object sender, EventArgs e)
+        {
+            
+        }
+
     }
 }

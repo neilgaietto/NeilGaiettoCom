@@ -11,7 +11,7 @@ namespace NeilGaiettoCom.Data
     /// <summary>
     /// The Current App's Properties.
     /// </summary>
-    class App
+    public class App
     {
         public static String AdminEmail
         {
@@ -22,5 +22,25 @@ namespace NeilGaiettoCom.Data
             }
         }
 
+        public static void PageVisited(string page, string visitor)
+        {
+            try
+            {
+                using (var db = new Data.NeilDBEntities())
+                {
+                    PageVisit pv = new PageVisit()
+                    {
+                        Page = page,
+                        Visitor = visitor,
+                        When = DateTime.Now
+                    };
+                    db.PageVisits.Add(pv);
+                    db.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
     }
 }
