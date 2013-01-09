@@ -21,10 +21,10 @@ namespace NeilGaiettoCom.Data
     
         public int PostID { get; set; }
         public string Title { get; set; }
-        public string CopyFile { get; set; }
-        public string URLPath { get; set; }
         public Nullable<System.DateTime> PostDate { get; set; }
         public Nullable<int> Views { get; set; }
+        public string ContentFile { get; set; }
+        public string Slug { get; set; }
     
         public virtual ICollection<PostTag> PostTags { get; set; }
     }

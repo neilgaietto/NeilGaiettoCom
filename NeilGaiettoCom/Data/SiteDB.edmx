@@ -29,8 +29,8 @@
           </Key>
           <Property Name="PostID" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
           <Property Name="Title" Type="nvarchar" Nullable="false" MaxLength="50" />
-          <Property Name="CopyFile" Type="ntext" Nullable="false" />
-          <Property Name="URLPath" Type="nvarchar" Nullable="false" MaxLength="50" />
+          <Property Name="ContentFile" Type="nvarchar" Nullable="false" MaxLength="50" />
+          <Property Name="Slug" Type="nvarchar" Nullable="false" MaxLength="50" />
           <Property Name="PostDate" Type="datetime" />
           <Property Name="Views" Type="int" />
         </EntityType>
@@ -75,11 +75,11 @@
           </Key>
           <Property Type="Int32" Name="PostID" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Type="String" Name="Title" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Type="String" Name="CopyFile" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Type="String" Name="URLPath" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Type="DateTime" Name="PostDate" Precision="3" />
           <Property Type="Int32" Name="Views" />
           <NavigationProperty Name="PostTags" Relationship="NeilDBModel.FK_PostTags_0" FromRole="Post" ToRole="PostTag" />
+          <Property Type="String" Name="ContentFile" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="Slug" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="PostTag">
           <Key>
@@ -122,10 +122,10 @@
           <EntitySetMapping Name="Posts">
             <EntityTypeMapping TypeName="NeilDBModel.Post">
               <MappingFragment StoreEntitySet="Posts">
+                <ScalarProperty Name="Slug" ColumnName="Slug" />
+                <ScalarProperty Name="ContentFile" ColumnName="ContentFile" />
                 <ScalarProperty Name="Views" ColumnName="Views" />
                 <ScalarProperty Name="PostDate" ColumnName="PostDate" />
-                <ScalarProperty Name="URLPath" ColumnName="URLPath" />
-                <ScalarProperty Name="CopyFile" ColumnName="CopyFile" />
                 <ScalarProperty Name="Title" ColumnName="Title" />
                 <ScalarProperty Name="PostID" ColumnName="PostID" />
               </MappingFragment>

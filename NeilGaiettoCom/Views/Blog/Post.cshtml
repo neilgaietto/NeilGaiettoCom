@@ -3,6 +3,6 @@
     ViewBag.Title = "Blog";
 }
 
+<h2>@Model.Title</h2>
 
-
-<br />
+@Html.Partial("Posts/"+Model.ContentFile, Model)

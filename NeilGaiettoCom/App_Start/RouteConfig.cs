@@ -14,12 +14,6 @@ namespace NeilGaiettoCom
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
-                name: "BlogPosts",
-                url: "Blog/{PostID}",
-                defaults: new { controller = "Blog", action = "PostDetails" }
-            );
-
-            routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }

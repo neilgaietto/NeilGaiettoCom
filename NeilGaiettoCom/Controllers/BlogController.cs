@@ -13,16 +13,16 @@ namespace NeilGaiettoCom.Controllers
 
         public ActionResult Index()
         {
-            Models.Post post = new Models.Post();
-            post.Get(1);
 
-            return View(post);
-        }
-
-        public ActionResult PostDetails(string PostID)
-        {
 
             return View();
+        }
+
+        public ActionResult Post(string id)
+        {
+            Models.Post post = new Models.Post();
+            post.Get(id);
+            return View(post);
         }
     }
 }

@@ -7,24 +7,27 @@ namespace NeilGaiettoCom.Models
 {
     public class Post
     {
-        public int PostID;
-        public string Title;
-        public string Slug;
-        public DateTime? PostDate;
-        public string[] Tags;
+        public int PostID {get;set;}
+        public string Title {get;set;}
+        public string Slug {get;set;}
+        public string ContentFile { get; set; }
+        public DateTime PostDate { get; set; }
+        public string[] Tags { get; set; }
 
-        public void Get(int postID)
+        public void Get(string slug)
         {
-            PostID = postID;
+            
 
             using (var db = new Data.NeilDBEntities())
             {
                 var post = (from p in db.Posts
-                            where p.PostID == PostID
+                            where p.Slug == slug
                             select p).FirstOrDefault();
+                PostID = post.PostID;
                 Title = post.Title;
-                Slug = post.URLPath;
-                PostDate = post.PostDate;
+                Slug = post.Slug;
+                PostDate = post.PostDate.Value;
+                ContentFile = post.ContentFile;
 
 
             }
