@@ -8,7 +8,7 @@
 
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
-    <title>Neil Gaietto - @ViewBag.Title</title>
+    <title>NEIL GAIETTO // WEB DEVELOPER // @ViewBag.Title.ToUpper()</title>
 </head>
 
 <body>
@@ -18,35 +18,33 @@
             <a class="site-logo" href="@Url.Action("", "Home")"><span class="first-name">Neil</span><br />
                 <span class="last-name">Gaietto</span></a>
         </header>
-        <nav class="main nav">
-            <div class="legend">Nav</div>
-            <ul>
-                <li>@Html.ActionLink("Home", "", "Home")</li>
-                <li>@Html.ActionLink("About", "", "About")</li>
-                <li>@Html.ActionLink("Work", "", "Work")</li>
-                <li>@Html.ActionLink("Contact", "", "Contact")</li>
-                <li>@Html.ActionLink("Blog", "", "Blog")</li>
-            </ul>
-        </nav>
-        <hr />
-        <div class="posts nav">
-            <div class="legend">Recent Posts</div>
-            <ul>
-                <li>@Html.ActionLink("Welcome", "Welcome", "Blog")</li>
-                <li>@Html.ActionLink("Test Post 1", "Test Post 1", "Blog")</li>
-                <li>@Html.ActionLink("Hello World", "Hello World", "Blog")</li>
-            </ul>
-        </div>
         <ul class="social">
             <li class="twitter"><a href="https://twitter.com/neilgaietto" title="Twitter"></a></li>
             <li class="linkedin"><a href="https://www.linkedin.com/in/neilgaietto" title="LinkedIn"></a></li>
-            <li class="google"><a href="https://plus.google.com/u/0/110811067270088539491" title="Google+"></a></li>
+            <li class="googleplus"><a href="https://plus.google.com/u/0/110811067270088539491" title="Google+"></a></li>
+            <li class="github"><a href="https://github.com/neilgaietto" title="GitHub"></a></li>
         </ul>
-        <footer class="footer">
+        <nav class="main nav">
+            @*<div class="legend">Nav</div>*@
+            <ul>
+                @*<li>@Html.ActionLink("home", "", "Home")</li>*@
+                <li>@Html.ActionLink("about", "", "About")</li>
+                <li>@Html.ActionLink("work", "", "Work")</li>
+                <li>@Html.ActionLink("contact", "", "Contact")</li>
+                @*<li>@Html.ActionLink("blog", "", "Blog")</li>*@
+            </ul>
+        </nav>
+@*        <hr />
+        <div class="posts nav">
+            <div class="legend">Recent Posts</div>
+            <ul>
+                <li>@Html.ActionLink("welcome", "Welcome", "Blog")</li>
+                <li>@Html.ActionLink("test post 1", "Test Post 1", "Blog")</li>
+                <li>@Html.ActionLink("hello world", "Hello World", "Blog")</li>
+            </ul>
+        </div>*@
 
 
-            <span class="copyright">&copy;@DateTime.Now.Year</span> <a href="javascript:;">Neil Gaietto</a>. All Rights Reserved. <a href="https://github.com/neilgaietto/Neil-Gaietto-Portfolio">Source</a>
-        </footer>
     </div>
     <div class="column-content">
         <h1 class="page-title">@ViewBag.Title</h1>
@@ -54,6 +52,9 @@
             @RenderBody()
         </div>
     </div>
+@*    <footer class="footer">
+        <span class="copyright">&copy;@DateTime.Now.Year</span> <a href="javascript:;">Neil Gaietto</a>. All Rights Reserved. <a href="https://github.com/neilgaietto/Neil-Gaietto-Portfolio">Source</a>
+    </footer>*@
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/scripts")
     @RenderSection("scripts", required: false)

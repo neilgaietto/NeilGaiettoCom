@@ -39,8 +39,9 @@ hr {
 /* nav */
 .column-nav {
     background-color: rgb(22,32,48);
-    margin: 0 10px 0 0;
-    width: 200px;
+    margin: 0;
+    border-right: 5px  solid #666;
+    width: 210px;
     height: 100%;
     float: left;
 }
@@ -51,7 +52,8 @@ hr {
     }
 
     .column-nav .nav {
-        padding: 10px;
+        padding: 15px;
+        float: left;
     }
 
         .column-nav .nav ul {
@@ -60,7 +62,8 @@ hr {
         }
 
             .column-nav .nav ul li {
-                padding: 0 0 0 0;
+                padding: 5px 0px;
+                font-size: 24px;
             }
 
                 .column-nav .nav ul li :hover {
@@ -73,9 +76,9 @@ hr {
                     display: block;
                 }
 
-        .column-nav .nav .legend {
+        /*.column-nav .nav .legend {
             text-transform: uppercase;
-        }
+        }*/
 
 
 
@@ -87,6 +90,7 @@ hr {
 
 /* Header */
 .header {
+    margin: 10px 5px;
 }
 
 .site-logo {
@@ -133,20 +137,32 @@ hr {
 
 
 .social {
-    margin-top: 5px;
+    display: block;
+    margin: 0px 0px 0px 5px;
 }
 
     .social li {
         float: left;
-        margin: 0 8px;
+
     }
 
         .social li a {
-            height: 32px;
-            width: 33px;
+            height: 48px;
+            width: 48px;
             display: block;
         }
-
+            .social li.twitter a {
+                background-image:url(images/icons/twitter-48.png);
+            }
+            .social li.linkedin a {
+                background-image:url(images/icons/linkedin-48.png);
+            }
+            .social li.googleplus a {
+                background-image:url(images/icons/googleplus-48.png);
+            }
+            .social li.github a {
+                background-image:url(images/icons/github-48.png);
+            }
 
 
 /* Contact Page*/

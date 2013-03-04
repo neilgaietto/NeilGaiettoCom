@@ -20,6 +20,7 @@ namespace NeilGaiettoCom.Controllers
         [HttpPost]
         public ActionResult Index(Models.ContactForm contactForm)
         {
+            Data.App.SendContactForm(contactForm);
             return View();
         }
     }
