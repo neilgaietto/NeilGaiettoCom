@@ -1,4 +1,13 @@
-﻿html {
+﻿* {
+margin:0;
+padding:0;
+-webkit-transition:.35s;
+-moz-transition:.35s;
+-o-transition:.35s;
+transition:.35s;
+}
+
+html {
     height: 100%;
 }
 
@@ -9,6 +18,7 @@ body {
     background-color: rgb(41,57,85);
     font-family: Verdana, Geneva, sans-serif;
     color: #ffffff;
+    font-size:15px;
 }
 
 a:link, a:visited, a:active {
@@ -92,7 +102,11 @@ hr {
 .header {
     margin: 10px 5px;
 }
-
+.tagline {
+    font-size: 15px;
+    margin: 0px 0px 8px 36px;
+    font-style: italic;
+}
 .site-logo {
     text-decoration: none;
     width: 200px;
@@ -110,7 +124,7 @@ hr {
     }
 
 .page-title {
-    font-size: 36px;
+    font-size: 46px;
     padding: 22px 10px 10px 10px;
 }
 
@@ -166,3 +180,7 @@ hr {
 
 
 /* Contact Page*/
+
+.FormSubmitButton {
+    text-decoration: none;
+}
