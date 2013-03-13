@@ -162,6 +162,7 @@
     </Compile>
     <Compile Include="Models\ContactForm.cs" />
     <Compile Include="Models\Post.cs" />
+    <Compile Include="Models\ResponseMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

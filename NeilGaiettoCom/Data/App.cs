@@ -86,7 +86,7 @@ namespace NeilGaiettoCom.Data
                 Body = body
             })
             {
-                smtp.Send(message);
+                //smtp.Send(message);
             }
 
 

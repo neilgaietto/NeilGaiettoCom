@@ -129,27 +129,6 @@ hr {
 }
 
 
-
-
-
-.content {
-    padding-left: 10px;
-}
-
-/* Footer */
-.footer {
-    bottom: 0;
-    left: 5px;
-    position: fixed;
-    padding: 0 4px;
-    font-size: 10px;
-}
-
-    .footer a {
-        text-decoration: none;
-    }
-
-
 .social {
     display: block;
     margin: 0px 0px 0px 5px;
@@ -179,8 +158,18 @@ hr {
             }
 
 
+            
+.content {
+    padding-left: 10px;
+}
 /* Contact Page*/
 
 .FormSubmitButton {
     text-decoration: none;
+}
+.ContactFormError {
+    display: none;
+}
+.ContactFormThanks {
+    display: none;
 }

@@ -18,10 +18,23 @@ namespace NeilGaiettoCom.Controllers
         }
 
         [HttpPost]
-        public ActionResult Index(Models.ContactForm contactForm)
+        public JsonResult Index(Models.ContactForm contactForm)
         {
-            Data.App.SendContactForm(contactForm);
-            return View();
+            Models.ResponseMessage respMsg = new Models.ResponseMessage();
+            try
+            {
+                Data.App.SendContactForm(contactForm);
+                respMsg.Status = 1;
+                respMsg.Message = "";
+            }
+            catch (Exception ex)//handle error message based on error
+            {
+                respMsg.Status = 0;
+                respMsg.Message = "Error submitting form. Please try again later or email me at <a href=\"mailto:neil.gaietto@gmail.com\">neil.gaietto@gmail.com</a>";
+            }
+
+
+            return Json(respMsg);
         }
     }
 }
