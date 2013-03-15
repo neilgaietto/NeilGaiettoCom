@@ -14,8 +14,15 @@
 
             //private
             function bindEvents() {
+                var current;
                 $('.skillList').delegate("a", "click", function () {
-                    alert('no content');
+                    var descID = $(this).attr('data-desc');//find id to desc associated with skill
+                    if (!current || descID !== current) {
+                        current = descID;
+                        $('.skillDescriptions div').slideUp();//hide any already open
+                        $('#' + descID).slideDown();//show associated
+                    }
+
                 });
             }
 
@@ -38,12 +45,19 @@
                 My passion. 
             </div>
             <div class="skillList">
-                <a href="javascript:;">.Net</a>
-                <a href="javascript:;">C#</a>
-                <a href="javascript:;">PHP</a>
-                <a href="javascript:;">Javascript</a>
+                <a href="javascript:;" data-desc="dotNetDesc">ASP.NET</a>
+                <a href="javascript:;" data-desc="cSharpDesc">C#</a>
+                <a href="javascript:;" data-desc="linqDesc">LINQ</a>
+                <a href="javascript:;" data-desc="phpDesc">PHP</a>
+                <a href="javascript:;" data-desc="javascriptDesc">Javascript</a>
             </div>
-            <div></div>
+            <div class="skillDescriptions">
+                <div id="dotNetDesc">Developed sites using both Form and MVC frameworks. Other frameworks I have used: Linq to SQL, Entity Framework, Lucene</div>
+                <div id="cSharpDesc">Language of choice when it comes to server side code and the language I have the most experience working with. </div>
+                <div id="linqDesc">LINQ is one of my favorite and most used features of the .NET framework. You can't make working with data much easier then this.</div>
+                <div id="phpDesc">The majority of the PHP work I have done was to extend the functionality of Yii and Wordpress sites.</div>
+                <div id="javascriptDesc">Currently my favorite and most researched language as of late. Frameworks I have used: jQuery + plugins, Knockout, Modernizer, Greensock, Google API, Facebook's API</div>
+            </div>
         </div>
         <div class="workSkillsSection">
             <h2>Web Technologies</h2>
@@ -51,65 +65,93 @@
                 My favorite platform for development.
             </div>
             <div class="skillList">
-                <a href="javascript:;">ASP.NET</a>
-                <a href="javascript:;">HTML</a>
-                <a href="javascript:;">CSS</a>
-                <a href="javascript:;">Yii</a>
-                <a href="javascript:;">Wordpress</a>
+                <a href="javascript:;" data-desc="htmlDesc">HTML</a>
+                <a href="javascript:;" data-desc="cssDesc">CSS</a>
+                <a href="javascript:;" data-desc="yiiDesc">Yii</a>
+                <a href="javascript:;" data-desc="wordpressDesc">Wordpress</a>
+                <a href="javascript:;" data-desc="geolocationDesc">Geolocation</a>
+                <a href="javascript:;" data-desc="socialDesc">Social</a>
             </div>
-            <div></div>
+            <div class="skillDescriptions">
+                
+                <div id="htmlDesc">I have been working with HTML since we got our first dial-up modem.</div>
+                <div id="cssDesc">A lot of my work has been converting Photoshop mock-ups and wireframes into full sites, so I am very familiar with lastest in CSS.</div>
+                <div id="yiiDesc">When it comes to developing a PHP site, I usually lean toward Yii. It's MVC pattern and features fit very well with my coding style.</div>
+                <div id="wordpressDesc">This has typically been a clients first choice for a small-to-medium sized site with a quick turnaround.</div>
+                <div id="geolocationDesc">I have used user geolocation detection to display targeted content, adjusted pricing, and store locating.</div>
+                <div id="socialDesc">I've integrated websites with just about all the major social networks. Facebook, Twitter, Pintrest, Google+</div>
+            </div>
         </div>
         <div class="workSkillsSection">
-            <h2>Database</h2>
+            <h2>Data Services</h2>
             <div>
             </div>
             <div class="skillList">
-                <a href="javascript:;">MSSQL</a>
-                <a href="javascript:;">MySQL</a>
-                <a href="javascript:;">Webservices</a>
-                <a href="javascript:;">Integrations</a>
+                <a href="javascript:;" data-desc="mssqlDesc">MSSQL</a>
+                <a href="javascript:;" data-desc="mysqlDesc">MySQL</a>
+                <a href="javascript:;" data-desc="performanceDesc">Performance</a>
+                <a href="javascript:;" data-desc="webservicesDesc">Webservices</a>
+                <a href="javascript:;" data-desc="cacheDesc">Cache</a>
             </div>
-            <div>
+            <div class="skillDescriptions">
+                <div id="mssqlDesc"></div>
+                <div id="mysqlDesc"></div>
+                <div id="performanceDesc">After having spent a lot of time in SQL Server Profiler, I have gotten better at writing faster queries combined with correct Indexes.</div>
+                <div id="webservicesDesc">Whether it be for sending or receiving data, I have setup data exchange services between clients and third-party providers.</div>
+                <div id="cacheDesc">This includes client resource caching, as well as server-side caching your slow data requests.</div>
             </div>
         </div>
         <div class="workSkillsSection">
             <h2>Servers</h2>
             <div>
-                Managing a full stack
+                Experience in managing a full stack on both Windows and Linux servers.
             </div>
             <p class="skillList">
-                <a href="javascript:;">Windows Server</a>
-                <a href="javascript:;">Linux</a>
-                <a href="javascript:;">Virtualization</a>
-                <a href="javascript:;">Cloud</a>
+                <a href="javascript:;" data-desc="windowsDesc">Windows Server</a>
+                <a href="javascript:;" data-desc="linuxDesc">Linux</a>
+                <a href="javascript:;" data-desc="virtualizationDesc">Virtualization</a>
+                <a href="javascript:;" data-desc="cloudDesc">Cloud</a>
             </p>
-            <div>
-                The majority of my exprience has been working with the entire Windows stack, but I have also worked with different stacks on linux.
+            <div class="skillDescriptions">
+                <div id="windowsDesc"></div>
+                <div id="linuxDesc"></div>
+                <div id="virtualizationDesc"></div>
+                <div id="cloudDesc"></div>
             </div>
         </div>
         <div class="workSkillsSection">
-            <h2>Project Planning</h2>
+            <h2>Project Coordination</h2>
             <div>
                 Experienced in taking a project from start to finish
             </div>
             <div class="skillList">
-                <a href="javascript:;">New Ideas</a>
-                <a href="javascript:;">Project planning</a>
-                <a href="javascript:;">Scopes</a>
-                <a href="javascript:;">Communication</a>
+                <a href="javascript:;" data-desc="newIdeasDesc">New Ideas</a>
+                <a href="javascript:;" data-desc="projectPlanningDesc">Project planning</a>
+                <a href="javascript:;" data-desc="scopesDesc">Scopes</a>
+                <a href="javascript:;" data-desc="communicationDesc">Communication</a>
+                <a href="javascript:;" data-desc="communicationDesc">Testing</a>
             </div>
-            <div>
+            <div class="skillDescriptions">
+                <div id="newIdeasDesc"></div>
+                <div id="projectPlanningDesc"></div>
+                <div id="scopesDesc"></div>
+                <div id="communicationDesc"></div>
             </div>
         </div>
         <div class="workSkillsSection">
             <h2>Design</h2>
             <div>Not my strongest skill.</div>
             <div class="skillList">
-                <a href="javascript:;">Cut-up</a>
-                <a href="javascript:;">Templates</a>
+                <a href="javascript:;" data-desc="cutupDesc">Cut-up</a>
+                @*<a href="javascript:;" data-desc="templatesDesc">Templates</a>*@
+                <a href="javascript:;" data-desc="uxDesc">UX</a>
+                <a href="javascript:;" data-desc="seoDesc">SEO</a>
             </div>
-            <div>
-                I can help improve the UX and SEO of an existing design, but the ability to creat a fresh new design is above me.
+            <div class="skillDescriptions">
+                <div id="cutupDesc">Work with photoshop and wireframe services to convert a design into a fully functional website.</div>
+                @*<div id="templatesDesc"></div>*@
+                <div id="uxDesc">Expienced with selecting proper design flow when it comes to the users interaction with a site.</div>
+                <div id="seoDesc">Worked with several websites to make sure they had the right content on their site to be index. We know that content is king when it comes to getting in search results.</div>
             </div>
         </div>
 

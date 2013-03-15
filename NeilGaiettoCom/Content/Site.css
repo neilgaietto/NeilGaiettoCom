@@ -1,10 +1,10 @@
 ﻿* {
     margin: 0;
     padding: 0;
-    -webkit-transition: .35s;
+    /*-webkit-transition: .35s;
     -moz-transition: .35s;
     -o-transition: .35s;
-    transition: .35s;
+    transition: .35s;*/
 }
 
 html {
@@ -52,6 +52,7 @@ hr {
     background-color: #0D1D37;
     margin: 0;
     border-right: 5px solid #273040;
+    border-bottom: 0;
     width: 210px;
     height: 100%;
     /*float: left;*/
@@ -113,6 +114,7 @@ hr {
     text-decoration: none;
     width: 200px;
     text-transform: uppercase;
+    visibility: hidden;
 }
 
     .site-logo .first-name {
@@ -285,3 +287,31 @@ hr {
     .Work .workSkillsSection {
         padding: 1px 0;
     }
+
+    .Work .skillDescriptions div {
+        display: none;
+        color: #C0A26D;
+    }
+
+
+
+
+
+/* responsive adjustments */
+@media screen and (max-width:480px) {
+
+    .column-nav {
+        position: relative;
+        width: 100%;
+        height: 310px;
+        border-right: 0;
+        border-bottom: 5px solid #273040;
+    }
+        .column-nav .nav {
+             clear: both;
+        }
+
+    .column-content {
+        margin: 0 0 50px 5px;
+    }
+}
