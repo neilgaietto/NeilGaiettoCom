@@ -11,7 +11,6 @@
 </head>
 
 <body>
-
     <div class="column-nav">
         <header class="header">
             <a class="site-logo" href="@Url.Action("", "Home")"><span class="first-name">Neil</span><br />
@@ -24,6 +23,7 @@
             <li class="googleplus"><a href="https://plus.google.com/u/0/110811067270088539491" title="Google+"></a></li>
             <li class="github"><a href="https://github.com/neilgaietto" title="GitHub"></a></li>
         </ul>
+        @*<a href="javascript:;" class="emailAddress"></a>*@
         <nav class="main nav">
             @*<div class="legend">Nav</div>*@
             <ul>
@@ -34,7 +34,7 @@
                 @*<li>@Html.ActionLink("blog", "", "Blog")</li>*@
             </ul>
         </nav>
-@*        <hr />
+        @*        <hr />
         <div class="posts nav">
             <div class="legend">Recent Posts</div>
             <ul>
@@ -52,7 +52,7 @@
             @RenderBody()
         </div>
     </div>
-@*    <footer class="footer">
+    @*    <footer class="footer">
         <span class="copyright">&copy;@DateTime.Now.Year</span> <a href="javascript:;">Neil Gaietto</a>. All Rights Reserved. <a href="https://github.com/neilgaietto/Neil-Gaietto-Portfolio">Source</a>
     </footer>*@
     @Scripts.Render("~/bundles/jquery")

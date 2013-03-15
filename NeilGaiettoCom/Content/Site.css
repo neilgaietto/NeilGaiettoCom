@@ -1,24 +1,25 @@
 ﻿* {
-margin:0;
-padding:0;
--webkit-transition:.35s;
--moz-transition:.35s;
--o-transition:.35s;
-transition:.35s;
+    margin: 0;
+    padding: 0;
+    -webkit-transition: .35s;
+    -moz-transition: .35s;
+    -o-transition: .35s;
+    transition: .35s;
 }
 
 html {
     height: 100%;
 }
 
-/* color scheme http://colorschemedesigner.com/#4W32P0RQYw0w0 */
+/* color scheme http://colorschemedesigner.com/#3H32Piig5w0w0 */
+
 
 body {
     height: 100%;
-    background-color: rgb(41,57,85);
+    background-color: #293955;
     font-family: Verdana, Geneva, sans-serif;
     color: #ffffff;
-    font-size:15px;
+    font-size: 15px;
 }
 
 a:link, a:visited, a:active {
@@ -48,9 +49,9 @@ hr {
 
 /* nav */
 .column-nav {
-    background-color: rgb(22,32,48);
+    background-color: #0D1D37;
     margin: 0;
-    border-right: 5px  solid #666;
+    border-right: 5px solid #273040;
     width: 210px;
     height: 100%;
     float: left;
@@ -74,11 +75,14 @@ hr {
             .column-nav .nav ul li {
                 padding: 5px 0px;
                 font-size: 24px;
+                border-left: 10px solid #0D1D37;
+                margin-left: -10px;
             }
 
-                .column-nav .nav ul li :hover {
-                    border-left: 10px solid #fff;
-                    margin-left: -10px;
+                .column-nav .nav ul li:hover {
+                    border-left-color: #ffffff;
+                    /*border-left: 10px solid #fff;*/
+                    /*margin-left: -10px;*/
                 }
 
                 .column-nav .nav ul li a {
@@ -86,27 +90,24 @@ hr {
                     display: block;
                 }
 
-        /*.column-nav .nav .legend {
+/*.column-nav .nav .legend {
             text-transform: uppercase;
         }*/
 
 
 
-.column-content {
-    background-color: #293955;
-    height: 100%;
-    float: left;
-}
 
 /* Header */
 .header {
     margin: 10px 5px;
 }
+
 .tagline {
     font-size: 15px;
     margin: 0px 0px 8px 36px;
     font-style: italic;
 }
+
 .site-logo {
     text-decoration: none;
     width: 200px;
@@ -123,11 +124,6 @@ hr {
         font-size: 43px;
     }
 
-.page-title {
-    font-size: 46px;
-    padding: 22px 10px 10px 10px;
-}
-
 
 .social {
     display: block;
@@ -136,7 +132,6 @@ hr {
 
     .social li {
         float: left;
-
     }
 
         .social li a {
@@ -144,32 +139,146 @@ hr {
             width: 48px;
             display: block;
         }
-            .social li.twitter a {
-                background-image:url(images/icons/twitter-48.png);
-            }
-            .social li.linkedin a {
-                background-image:url(images/icons/linkedin-48.png);
-            }
-            .social li.googleplus a {
-                background-image:url(images/icons/googleplus-48.png);
-            }
-            .social li.github a {
-                background-image:url(images/icons/github-48.png);
-            }
+
+        .social li.twitter a {
+            background-image: url(images/icons/twitter-48.png);
+        }
+
+        .social li.linkedin a {
+            background-image: url(images/icons/linkedin-48.png);
+        }
+
+        .social li.googleplus a {
+            background-image: url(images/icons/googleplus-48.png);
+        }
+
+        .social li.github a {
+            background-image: url(images/icons/github-48.png);
+        }
 
 
-            
+/* general content */
+.column-content {
+    background-color: #293955;
+    height: 100%;
+    float: left;
+}
+
+.page-title {
+    font-size: 46px;
+    padding: 22px 10px 10px 10px;
+    color: #6880AA;
+}
+
 .content {
     padding-left: 10px;
 }
+
+    .content a {
+        color: #7A8CAA;
+    }
+
+        .content a.button {
+            background: none repeat scroll 0 0 #7A8CAA;
+            border: 1px solid #7A8CAA;
+            color: #0D1D37;
+            padding: 5px 10px;
+            margin: 5px;
+        }
+
+            .content a.button:active {
+                border: 1px solid #273040;
+            }
+
+.emailAddress {
+}
+
+/* about */
+.About {
+}
+
+    .About h2 {
+        font-size: 19px;
+        margin: 10px 0;
+        color: #A5BC6B;
+    }
+
 /* Contact Page*/
+.Contact {
+}
+
+    .Contact p, .Contact .formField {
+        clear: both;
+        display: block;
+        float: left;
+        margin: 5px 10px 10px 10px;
+    }
+
+    .Contact label {
+        float: left;
+        font-size: 17px;
+        margin: 0 0 5px 5px;
+        color: #A5BC6B;
+    }
+
+    .Contact input {
+        font-size: 18px;
+        height: 28px;
+        width: 220px;
+    }
+
+    .Contact textarea {
+        font-size: 18px;
+        height: 80px;
+        width: 220px;
+    }
 
 .FormSubmitButton {
     text-decoration: none;
 }
+
 .ContactFormError {
     display: none;
+    color: #B16596;
+    float: left;
 }
+
 .ContactFormThanks {
     display: none;
 }
+
+/* work page*/
+.Work {
+}
+
+    .Work h2 {
+        font-size: 19px;
+        margin: 10px 0;
+        color: #A5BC6B;
+    }
+
+    .Work .skillList {
+        margin: 10px 0;
+    }
+
+        .Work .skillList a {
+            background: none repeat scroll 0 0 #7A8CAA;
+            border: 1px solid #7A8CAA;
+            color: #0D1D37;
+            margin: 0 2px;
+            padding: 1px 5px;
+            /*text-decoration: none;*/
+        }
+
+        .Work .skillList :active {
+            border: 1px solid #273040;
+        }
+
+    .Work .desc {
+        font-style: italic;
+        margin: 10px 0;
+    }
+
+    .Work .workSkillsSection {
+        padding: 1px 0;
+    }
