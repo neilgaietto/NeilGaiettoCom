@@ -1,6 +1,7 @@
 ﻿@model NeilGaiettoCom.Models.ContactForm
 @{
-    ViewBag.Header = ViewBag.Title = "contact";
+    ViewBag.Title = "Contact";
+    ViewBag.Header = "contact";
 }
 @section scripts{
     <script type="text/javascript">
@@ -15,7 +16,7 @@
                 var rval = true;
                 $.each(fieldIds, function (key, value) {
                     if ($('#' + value).val() == '') {
-                        var lbl = $('label[for="'+value+'"]').html()
+                        var lbl = $('label[for="' + value + '"]').html()
                         $('#ContactFormError').html("Please enter a value for: " + lbl).show();
                         return rval = false;//exit loop and set return val
                     }
@@ -24,8 +25,8 @@
             }
             this.SubmitForm = function (fieldIds, btn) {
 
-                if (btn.attr('submitting')=='true') { return; }//make sure button isnt currently loading submitting
-                
+                if (btn.attr('submitting') == 'true') { return; }//make sure button isnt currently loading submitting
+
                 btn.attr('submitting', true);
                 var postVals = {};
                 $.each(fieldIds, function (key, value) {
@@ -36,13 +37,13 @@
 
                 //return function for the contact form submit
                 var successFunc = function (respMsg) {//responds with a success or error with message
-                    if (!respMsg || !respMsg.Status) { 
+                    if (!respMsg || !respMsg.Status) {
                         $('#ContactFormError').html(respMsg.Message ? respMsg.Message : "There was an error submitting form.").show();
                     } else {
                         $('#ContactForm').hide();
                         $('#ContactFormThanks').show();
                     }
-                    
+
                     btn.attr('submitting', false);//button loading toggle
                 }
 
@@ -59,7 +60,7 @@
             function bindEvents() {
 
                 ////bind form submit links
-                $('.FormSubmitButton').on('click',function (e) {
+                $('.FormSubmitButton').on('click', function (e) {
                     var fields = ['FullName', 'Email', 'Message'];
                     if (me.Validate(fields)) {
                         me.SubmitForm(fields, $(this));
@@ -97,7 +98,6 @@
     </div>
 </div>
 <div class="ContactFormError" id="ContactFormError">
-
 </div>
 <div class="ContactFormThanks" id="ContactFormThanks">
     Thank you for contacting me. I will respond as soon as possible.

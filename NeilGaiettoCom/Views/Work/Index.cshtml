@@ -1,5 +1,26 @@
 ﻿@{
-    ViewBag.Header = ViewBag.Title = "work";
+    ViewBag.Title = "Work";
+    ViewBag.Header = "work";
+}
+@section scripts{
+    <script type="text/javascript">
+        NeilSite.Work = new (function () {
+            var me = this;
+            //public
+            this.init = function () {
+                bindEvents();
+
+            }
+
+            //private
+            function bindEvents() {
+                $('.skillList').delegate("a", "click", function () {
+                    alert('no content');
+                });
+            }
+
+        });
+    </script>
 }
 
 <div class="Work">
@@ -43,7 +64,7 @@
             <div>
             </div>
             <div class="skillList">
-                <a href="javascript:;">MSSQL</a> 
+                <a href="javascript:;">MSSQL</a>
                 <a href="javascript:;">MySQL</a>
                 <a href="javascript:;">Webservices</a>
                 <a href="javascript:;">Integrations</a>
@@ -57,8 +78,8 @@
                 Managing a full stack
             </div>
             <p class="skillList">
-                <a href="javascript:;">Windows Server</a>, 
-                <a href="javascript:;">Linux</a>, 
+                <a href="javascript:;">Windows Server</a>
+                <a href="javascript:;">Linux</a>
                 <a href="javascript:;">Virtualization</a>
                 <a href="javascript:;">Cloud</a>
             </p>
@@ -72,8 +93,8 @@
                 Experienced in taking a project from start to finish
             </div>
             <div class="skillList">
-                <a href="javascript:;">New Ideas</a> 
-                <a href="javascript:;">Project planning</a> 
+                <a href="javascript:;">New Ideas</a>
+                <a href="javascript:;">Project planning</a>
                 <a href="javascript:;">Scopes</a>
                 <a href="javascript:;">Communication</a>
             </div>
@@ -84,7 +105,7 @@
             <h2>Design</h2>
             <div>Not my strongest skill.</div>
             <div class="skillList">
-                <a href="javascript:;">Cut-up</a> 
+                <a href="javascript:;">Cut-up</a>
                 <a href="javascript:;">Templates</a>
             </div>
             <div>

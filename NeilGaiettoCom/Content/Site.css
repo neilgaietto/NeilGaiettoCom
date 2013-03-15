@@ -54,7 +54,8 @@ hr {
     border-right: 5px solid #273040;
     width: 210px;
     height: 100%;
-    float: left;
+    /*float: left;*/
+    position: fixed;
 }
 
     .column-nav a {
@@ -161,7 +162,8 @@ hr {
 .column-content {
     background-color: #293955;
     height: 100%;
-    float: left;
+    /*float: left;*/
+    margin-left: 215px;
 }
 
 .page-title {
@@ -171,6 +173,7 @@ hr {
 }
 
 .content {
+    margin-left: 10px;
     padding-left: 10px;
 }
 
@@ -211,7 +214,7 @@ hr {
         clear: both;
         display: block;
         float: left;
-        margin: 5px 10px 10px 10px;
+        margin: 5px 0px 10px;
     }
 
     .Contact label {
@@ -265,7 +268,7 @@ hr {
             background: none repeat scroll 0 0 #7A8CAA;
             border: 1px solid #7A8CAA;
             color: #0D1D37;
-            margin: 0 2px;
+            margin: 5px 2px;
             padding: 1px 5px;
             /*text-decoration: none;*/
         }
