@@ -13,7 +13,7 @@ namespace NeilGaiettoCom.Controllers
 
         public ActionResult Index()
         {
-            return RedirectToAction("Index","About");
+            return View();
         }
 
     }

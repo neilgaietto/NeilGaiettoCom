@@ -9,14 +9,14 @@ namespace NeilGaiettoCom.Models
 {
     public class ContactForm
     {
-        [DisplayName("Name")]
+        [Required, DisplayName("Name")]
         public string FullName { get; set; }
 
-        [DisplayName("Email")]
+        [Required, DisplayName("Email")]
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
 
-        [DisplayName("Message")]
+        [Required, DisplayName("Message")]
         public string Message { get; set; }
     }
 }

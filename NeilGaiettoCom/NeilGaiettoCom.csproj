@@ -246,6 +246,7 @@
       <DependentUpon>SiteDB.edmx</DependentUpon>
       <LastGenOutput>SiteDB.cs</LastGenOutput>
     </Content>
+    <Content Include="Content\Files\NeilGaietto-Resume.doc" />
     <None Include="Properties\PublishProfiles\FileDeploy.pubxml" />
     <None Include="Scripts\jquery-1.7.1.intellisense.js" />
     <Content Include="Scripts\global.js" />

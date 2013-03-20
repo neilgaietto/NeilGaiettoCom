@@ -55,7 +55,8 @@ hr {
     border-bottom: 0;
     width: 210px;
     height: 100%;
-    /*float: left;*/
+    min-height: 360px;
+    float: left;
     position: fixed;
 }
 
@@ -114,7 +115,7 @@ hr {
     text-decoration: none;
     width: 200px;
     text-transform: uppercase;
-    visibility: hidden;
+    /*visibility: hidden;*/
 }
 
     .site-logo .first-name {
@@ -164,6 +165,7 @@ hr {
 .column-content {
     background-color: #293955;
     height: 100%;
+    min-height: 360px;
     /*float: left;*/
     margin-left: 215px;
 }
@@ -198,7 +200,7 @@ hr {
 .emailAddress {
 }
 
-/* about */
+/* about/home */
 .About {
 }
 
@@ -206,6 +208,9 @@ hr {
         font-size: 19px;
         margin: 10px 0;
         color: #A5BC6B;
+    }
+    .About p {
+        margin: 20px 0;
     }
 
 /* Contact Page*/
@@ -295,17 +300,21 @@ hr {
 
 
 
-
+/*@media screen and (max-height:480px) {
+}*/
 
 /* responsive adjustments */
-@media screen and (max-width:480px) {
+@media screen and (max-width:479px) {/**/
 
     .column-nav {
         position: relative;
         width: 100%;
+        min-width: 210px;
         height: 310px;
+        min-height: 310px;
         border-right: 0;
         border-bottom: 5px solid #273040;
+        
     }
         .column-nav .nav {
              clear: both;

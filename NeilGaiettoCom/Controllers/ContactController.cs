@@ -20,7 +20,14 @@ namespace NeilGaiettoCom.Controllers
         [HttpPost]
         public JsonResult Index(Models.ContactForm contactForm)
         {
+
             Models.ResponseMessage respMsg = new Models.ResponseMessage();
+            //if (!ModelState.IsValid)//TODO: fix validation
+            //{
+            //    respMsg.Status = 0;
+            //    respMsg.Message = "";
+            //}
+
             try
             {
                 Data.App.SendContactForm(contactForm);
