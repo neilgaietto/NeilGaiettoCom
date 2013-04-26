@@ -9,11 +9,12 @@
             //public
             this.init = function () {
                 bindEvents();
-
             }
 
             //private
             function bindEvents() {
+
+                //extend description on skills with more info
                 var current;
                 $('.skillList').delegate("a", "click", function () {
                     var descID = $(this).attr('data-desc');//find id to desc associated with skill
@@ -24,6 +25,22 @@
                     }
 
                 });
+
+                //delay underline hover
+                var hovering = false;
+                $('.moreHover').mouseover(function () {
+                    if (!hovering) {
+                        $('.skillList a.more').addClass('hovering');
+                        window.setTimeout(function () { $('.skillList a.more').removeClass('hovering'); }, 250);
+                        window.setTimeout(function () { hovering = false; }, 500);
+                    }
+                    hovering = true;
+                });
+
+
+                //work slider
+                $('.workExamples .flexslider').flexslider();
+
             }
 
         });
@@ -31,25 +48,24 @@
 }
 
 <div class="Work">
-    <p class="desc">
-        Project Development Skills - Click on a skill for more about my experience with the technology.
-    </p>
+
 
     <div class="workSkills">
         @*Left column - Quick list of skills*@
-
-
+        <p class="desc">
+            Project Development Skills - Click on an <span class="moreHover">underlined</span> skill for more about my experience with the technology.
+        </p>
         <div class="workSkillsSection">
             <h2>Programming</h2>
             <div>
                 My passion. 
             </div>
             <div class="skillList">
-                <a href="javascript:;" data-desc="dotNetDesc">ASP.NET</a>
-                <a href="javascript:;" data-desc="cSharpDesc">C#</a>
-                <a href="javascript:;" data-desc="linqDesc">LINQ</a>
-                <a href="javascript:;" data-desc="phpDesc">PHP</a>
-                <a href="javascript:;" data-desc="javascriptDesc">Javascript</a>
+                <a href="javascript:;" data-desc="dotNetDesc" class="more">ASP.NET</a>
+                <a href="javascript:;" data-desc="cSharpDesc" class="more">C#</a>
+                <a href="javascript:;" data-desc="linqDesc" class="more">LINQ</a>
+                <a href="javascript:;" data-desc="phpDesc" class="more">PHP</a>
+                <a href="javascript:;" data-desc="javascriptDesc" class="more">Javascript</a>
             </div>
             <div class="skillDescriptions">
                 <div id="dotNetDesc">Developed sites using both Form and MVC frameworks. Other frameworks I have used: Linq to SQL, Entity Framework, Lucene</div>
@@ -65,15 +81,15 @@
                 My favorite platform for development.
             </div>
             <div class="skillList">
-                <a href="javascript:;" data-desc="htmlDesc">HTML</a>
-                <a href="javascript:;" data-desc="cssDesc">CSS</a>
-                <a href="javascript:;" data-desc="yiiDesc">Yii</a>
-                <a href="javascript:;" data-desc="wordpressDesc">Wordpress</a>
-                <a href="javascript:;" data-desc="geolocationDesc">Geolocation</a>
-                <a href="javascript:;" data-desc="socialDesc">Social</a>
+                <a href="javascript:;" data-desc="htmlDesc" class="more">HTML</a>
+                <a href="javascript:;" data-desc="cssDesc" class="more">CSS</a>
+                <a href="javascript:;" data-desc="yiiDesc" class="more">Yii</a>
+                <a href="javascript:;" data-desc="wordpressDesc" class="more">Wordpress</a>
+                <a href="javascript:;" data-desc="geolocationDesc" class="more">Geolocation</a>
+                <a href="javascript:;" data-desc="socialDesc" class="more">Social</a>
             </div>
             <div class="skillDescriptions">
-                
+
                 <div id="htmlDesc">I have been working with HTML since we got our first dial-up modem.</div>
                 <div id="cssDesc">A lot of my work has been converting Photoshop mock-ups and wireframes into full sites, so I am very familiar with lastest in CSS.</div>
                 <div id="yiiDesc">When it comes to developing a PHP site, I usually lean toward Yii. It's MVC pattern and features fit very well with my coding style.</div>
@@ -89,9 +105,9 @@
             <div class="skillList">
                 <a href="javascript:;" data-desc="mssqlDesc">MSSQL</a>
                 <a href="javascript:;" data-desc="mysqlDesc">MySQL</a>
-                <a href="javascript:;" data-desc="performanceDesc">Performance</a>
-                <a href="javascript:;" data-desc="webservicesDesc">Webservices</a>
-                <a href="javascript:;" data-desc="cacheDesc">Cache</a>
+                <a href="javascript:;" data-desc="performanceDesc" class="more">Performance</a>
+                <a href="javascript:;" data-desc="webservicesDesc" class="more">Webservices</a>
+                <a href="javascript:;" data-desc="cacheDesc" class="more">Cache</a>
             </div>
             <div class="skillDescriptions">
                 <div id="mssqlDesc"></div>
@@ -142,13 +158,13 @@
             <h2>Design</h2>
             <div>Not my strongest skill.</div>
             <div class="skillList">
-                <a href="javascript:;" data-desc="cutupDesc">Cut-up</a>
+                <a href="javascript:;" data-desc="cutupDesc" class="more">Cut-up</a>
                 @*<a href="javascript:;" data-desc="templatesDesc">Templates</a>*@
-                <a href="javascript:;" data-desc="uxDesc">UX</a>
-                <a href="javascript:;" data-desc="seoDesc">SEO</a>
+                <a href="javascript:;" data-desc="uxDesc" class="more">UX</a>
+                <a href="javascript:;" data-desc="seoDesc" class="more">SEO</a>
             </div>
             <div class="skillDescriptions">
-                <div id="cutupDesc">Work with photoshop and wireframe services to convert a design into a fully functional website.</div>
+                <div id="cutupDesc" class="more">Work with photoshop and wireframe services to convert a design into a fully functional website.</div>
                 @*<div id="templatesDesc"></div>*@
                 <div id="uxDesc">Expienced with selecting proper design flow when it comes to the users interaction with a site.</div>
                 <div id="seoDesc">Worked with several websites to make sure they had the right content on their site to be index. We know that content is king when it comes to getting in search results.</div>
@@ -156,12 +172,29 @@
         </div>
 
     </div>
-    @*  <div class="workExamples">
-        <div>La-Z-Boy.com</div>
-        <div>Mobile.La-Z-Boy.com</div>
-        <div>Paramount Digital User Guide</div>
-        <div>Ohio Lottery</div>
-        <div></div>
-        <div></div>
-    </div>*@
+    <div class="workExamples">
+
+        <div class="flex-container">
+            <div class="flexslider">
+                <ul class="slides">
+                    <li>
+                        <img src="http://placehold.it/350x350" />
+                        <p class="flex-caption">La-Z-Boy.com</p>
+                    </li>
+                    <li>
+                        <img src="http://placehold.it/350x350" />
+                        <p class="flex-caption">Mobile.La-Z-Boy.com</p>
+                    </li>
+                    <li>
+                        <img src="http://placehold.it/350x350" />
+                        <p class="flex-caption">Paramount Digital User Guide</p>
+                    </li>
+                    <li>
+                        <img src="http://placehold.it/350x350" />
+                        <p class="flex-caption">Ohio Lottery</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>

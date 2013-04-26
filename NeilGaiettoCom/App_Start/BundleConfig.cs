@@ -24,9 +24,10 @@ namespace NeilGaiettoCom
                         "~/Scripts/modernizr-*"));
 
             bundles.Add(new ScriptBundle("~/bundles/scripts").Include(
-                        "~/Scripts/global.js"));
+                        "~/Scripts/global.js",
+                        "~/Scripts/jquery.flexslider.js"));
 
-            bundles.Add(new StyleBundle("~/Content/css").Include("~/Content/reset.css","~/Content/site.css"));
+            bundles.Add(new StyleBundle("~/Content/css").Include("~/Content/reset.css","~/Content/site.css", "~/Content/flexslider.css"));
 
             bundles.Add(new StyleBundle("~/Content/themes/base/css").Include(
                         "~/Content/themes/base/jquery.ui.core.css",

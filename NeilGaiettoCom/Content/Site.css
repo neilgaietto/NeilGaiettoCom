@@ -209,6 +209,7 @@ hr {
         margin: 10px 0;
         color: #A5BC6B;
     }
+
     .About p {
         margin: 20px 0;
     }
@@ -267,6 +268,34 @@ hr {
         color: #A5BC6B;
     }
 
+    .Work .workSkills {
+        width: 50%;
+        float: left;
+    }
+
+    .Work .workExamples {
+        width: 50%;
+        float: left;
+    }
+
+    .Work .flex-container {
+        margin: 10px;
+    }
+
+        .Work .flex-container .flexslider {
+            background-color: #7A8CAA;
+            border-color: #7A8CAA;
+            box-shadow: none;
+        }
+
+        .Work .flex-container .flex-caption {
+            color: #0D1D37;
+        }
+
+    .Work .moreHover {
+        text-decoration: underline;
+    }
+
     .Work .skillList {
         margin: 10px 0;
     }
@@ -277,8 +306,20 @@ hr {
             color: #0D1D37;
             margin: 5px 2px;
             padding: 1px 5px;
-            /*text-decoration: none;*/
+            text-decoration: none;
         }
+
+            .Work .skillList a.more {
+                text-decoration: underline;
+                -webkit-transition: .35s;
+                -moz-transition: .35s;
+                -o-transition: .35s;
+                transition: .35s;
+            }
+
+                .Work .skillList a.more.hovering {
+                    color: #6880AA;
+                }
 
         .Work .skillList :active {
             border: 1px solid #273040;
@@ -304,7 +345,7 @@ hr {
 }*/
 
 /* responsive adjustments */
-@media screen and (max-width:479px) {/**/
+@media screen and (max-width:479px) { /**/
 
     .column-nav {
         position: relative;
@@ -314,10 +355,10 @@ hr {
         min-height: 310px;
         border-right: 0;
         border-bottom: 5px solid #273040;
-        
     }
+
         .column-nav .nav {
-             clear: both;
+            clear: both;
         }
 
     .column-content {
