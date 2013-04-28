@@ -16,7 +16,7 @@
 
                 //extend description on skills with more info
                 var current;
-                $('.skillList').delegate("a", "click", function () {
+                $('.skillList').delegate("a.more", "click", function () {
                     var descID = $(this).attr('data-desc');//find id to desc associated with skill
                     if (!current || descID !== current) {
                         current = descID;
@@ -39,7 +39,13 @@
 
 
                 //work slider
-                $('.workExamples .flexslider').flexslider();
+                var showSlideDesc = function (slider) {
+                    var i = slider.currentSlide;
+                    $('.flex-slide-desc li').removeClass('active');
+                    $('.flex-slide-desc li').eq(i).addClass('active');
+                }
+                var hideSlideDesc = function (slider) { $('.flex-slide-desc li').removeClass('active'); }
+                $('.workExamples .flexslider').flexslider({ animation: "slide", start: showSlideDesc, before: hideSlideDesc, after: showSlideDesc });
 
             }
 
@@ -78,7 +84,7 @@
         <div class="workSkillsSection">
             <h2>Web Technologies</h2>
             <div>
-                My favorite platform for development.
+                My platform of choice for development.
             </div>
             <div class="skillList">
                 <a href="javascript:;" data-desc="htmlDesc" class="more">HTML</a>
@@ -156,7 +162,7 @@
         </div>
         <div class="workSkillsSection">
             <h2>Design</h2>
-            <div>Not my strongest skill.</div>
+            <div></div>
             <div class="skillList">
                 <a href="javascript:;" data-desc="cutupDesc" class="more">Cut-up</a>
                 @*<a href="javascript:;" data-desc="templatesDesc">Templates</a>*@
@@ -178,23 +184,41 @@
             <div class="flexslider">
                 <ul class="slides">
                     <li>
-                        <img src="http://placehold.it/350x350" />
+                        <img src="/content/images/work/lzb.jpg" />
                         <p class="flex-caption">La-Z-Boy.com</p>
                     </li>
                     <li>
-                        <img src="http://placehold.it/350x350" />
+                        <img src="/content/images/work/lzbmobile.jpg" />
                         <p class="flex-caption">Mobile.La-Z-Boy.com</p>
                     </li>
                     <li>
-                        <img src="http://placehold.it/350x350" />
+                        <img src="/content/images/work/paramount.jpg" />
                         <p class="flex-caption">Paramount Digital User Guide</p>
                     </li>
                     <li>
-                        <img src="http://placehold.it/350x350" />
-                        <p class="flex-caption">Ohio Lottery</p>
+                        <img src="/content/images/work/stryker.jpg" />
+                        <p class="flex-caption">Paramount Digital User Guide</p>
+                    </li>
+                    <li>
+                        <img src="/content/images/work/keno.jpg" />
+                        <p class="flex-caption">Keno</p>
+                    </li>
+                    <li>
+                        <img src="/content/images/work/lima.jpg" />
+                        <p class="flex-caption">Paramount Digital User Guide</p>
                     </li>
                 </ul>
             </div>
+        </div>
+        <div class="flex-slide-desc">
+            <ul class="slides">
+                <li>This is a complete ecommerce site built from the ground up by us. It's an c#/ASP.Net forms site with a lot of jquery interaction. This site has some very in-depth analytics and is currently running an A/B test on the homepage. This has also been built to deliver geo-targeted product pricing and information automatically based on the user’s closest store. We have also integrated several 3rd party APIs into this site to handle services such as Reviews, Cart, Email Capture and Mapping.</li>
+                <li>La-Z-Boy Mobile is a mobile site we just released and I am very happy with the back-end design. It was developed with ASP.Net MVC and Knockout.js. It was designed to have a web front-end that runs on top of an API back-end.</li>
+                <li>Paramount digital user guide is an animated and interactive website using jquery and greensock js. It was designed to be responsive for use on tablets.</li>
+                <li>This is an animated piece I worked on for Ohio Lottery's Keno game. It was developed as a sub-project to be integrated into the client’s larger project. This needed to use HTML5 features but still be IE7 compatible.</li>
+                <li></li>
+                <li></li>
+            </ul>
         </div>
     </div>
 </div>

@@ -269,28 +269,58 @@ hr {
     }
 
     .Work .workSkills {
-        width: 50%;
+        width: 49%;
         float: left;
+    }
+
+    .Work .skillDescriptions {
+        clear: both;
     }
 
     .Work .workExamples {
-        width: 50%;
+        width: 49%;
         float: left;
+        background-color: #273040;
     }
 
     .Work .flex-container {
-        margin: 10px;
+        margin: 10px 10px 10px;
+        overflow: hidden;
     }
 
         .Work .flex-container .flexslider {
             background-color: #7A8CAA;
             border-color: #7A8CAA;
             box-shadow: none;
+            border-radius: 0px;
+            margin-bottom: 0px;
         }
 
         .Work .flex-container .flex-caption {
             color: #0D1D37;
+            font-size: 18px;
+            height: 28px;
         }
+
+        .Work .flex-container .flex-control-nav {
+            bottom: -6px;
+        }
+
+    .Work .flex-slide-desc {
+        margin: 0px 10px 10px;
+        padding: 5px 5px 0px;
+        height: 150px;
+        color: #0D1D37;
+        background-color: #7A8CAA;
+    }
+
+        .Work .flex-slide-desc li {
+            display: none;
+        }
+
+            .Work .flex-slide-desc li.active {
+                display: block;
+            }
 
     .Work .moreHover {
         text-decoration: underline;
@@ -304,8 +334,10 @@ hr {
             background: none repeat scroll 0 0 #7A8CAA;
             border: 1px solid #7A8CAA;
             color: #0D1D37;
+            display: block;
+            float: left;
             margin: 5px 2px;
-            padding: 1px 5px;
+            padding: 3px 5px 4px;
             text-decoration: none;
         }
 
@@ -332,6 +364,9 @@ hr {
 
     .Work .workSkillsSection {
         padding: 1px 0;
+        display: block;
+        float: left;
+        clear: both;
     }
 
     .Work .skillDescriptions div {
@@ -363,5 +398,16 @@ hr {
 
     .column-content {
         margin: 0 0 50px 5px;
+    }
+}
+
+@media screen and (max-width:879px) {
+    .Work .workSkills {
+        width: 99%;
+    }
+
+    .Work .workExamples {
+        width: 99%;
+        margin-top: 20px
     }
 }
