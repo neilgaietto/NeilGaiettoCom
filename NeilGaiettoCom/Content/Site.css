@@ -20,6 +20,7 @@ body {
     font-family: Verdana, Geneva, sans-serif;
     color: #ffffff;
     font-size: 15px;
+    line-height: 18px;
 }
 
 a:link, a:visited, a:active {
@@ -45,6 +46,18 @@ hr {
 
 .clearboth {
     clear: both;
+}
+
+.orange {
+    color: #C0A26D;
+}
+
+.green {
+    color: #A5BC6B;
+}
+
+.blue {
+    color: #6880AA;
 }
 
 /* nav */
@@ -103,6 +116,7 @@ hr {
 /* Header */
 .header {
     margin: 10px 5px;
+    line-height: 26px;
 }
 
 .tagline {
@@ -176,6 +190,18 @@ hr {
     color: #6880AA;
 }
 
+    .page-title:after {
+        content: "Preview";
+        background-color: transparent;
+        color: #A5BC6B;
+        display: inline-block;
+        font: bold 9px/9px "Segoe UI";
+        padding: 1px 10px 2px;
+        position: relative;
+        text-transform: uppercase;
+        top: -24px;
+    }
+
 .content {
     margin-left: 10px;
     padding-left: 10px;
@@ -202,6 +228,7 @@ hr {
 
 /* about/home */
 .About {
+    max-width: 600px;
 }
 
     .About h2 {
@@ -212,6 +239,11 @@ hr {
 
     .About p {
         margin: 20px 0;
+    }
+
+    .About ul {
+        margin-left: 40px;
+        list-style: disc;
     }
 
 /* Contact Page*/
@@ -294,6 +326,8 @@ hr {
             box-shadow: none;
             border-radius: 0px;
             margin-bottom: 0px;
+            padding-bottom: 12px;
+            line-height: 16px;
         }
 
         .Work .flex-container .flex-caption {
@@ -307,12 +341,31 @@ hr {
         }
 
     .Work .flex-slide-desc {
-        margin: 0px 10px 10px;
-        padding: 5px 5px 0px;
-        height: 150px;
+        margin: 10px;
+        padding: 5px;
+        min-height: 200px;
         color: #0D1D37;
         background-color: #7A8CAA;
+        position: relative;
     }
+
+        .Work .flex-slide-desc h3 {
+            font-size: 18px;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .Work .flex-slide-desc .view-site {
+            background-color: transparent;
+            color: #A5BC6B;
+            display: inline-block;
+            font: bold 12px/12px "Segoe UI";
+            padding: 1px 10px 2px;
+            position: absolute;
+            right: 5px;
+            text-transform: uppercase;
+            top: 5px;
+        }
 
         .Work .flex-slide-desc li {
             display: none;
@@ -390,6 +443,7 @@ hr {
         min-height: 310px;
         border-right: 0;
         border-bottom: 5px solid #273040;
+        margin-bottom: 10px;
     }
 
         .column-nav .nav {
@@ -408,6 +462,6 @@ hr {
 
     .Work .workExamples {
         width: 99%;
-        margin-top: 20px
+        margin-top: 20px;
     }
 }
