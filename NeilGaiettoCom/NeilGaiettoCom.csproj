@@ -42,6 +42,9 @@
     <Reference Include="Antlr3.Runtime">
       <HintPath>..\packages\WebGrease.1.3.0\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="HtmlAgilityPack">
+      <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Web.Mvc.FixedDisplayModes">
       <HintPath>..\packages\Microsoft.AspNet.Mvc.FixedDisplayModes.1.0.1\lib\net40\Microsoft.Web.Mvc.FixedDisplayModes.dll</HintPath>
@@ -144,6 +147,7 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\AboutController.cs" />
+    <Compile Include="Controllers\BadaController.cs" />
     <Compile Include="Controllers\BlogController.cs" />
     <Compile Include="Controllers\ContactController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -179,15 +183,23 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\BadaView.cs" />
     <Compile Include="Models\ContactForm.cs" />
     <Compile Include="Models\Post.cs" />
     <Compile Include="Models\ResponseMessage.cs" />
+    <Compile Include="Models\SearchTerms.cs" />
     <Compile Include="Models\StatsOverview.cs" />
+    <Compile Include="Models\Term.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
+    <Content Include="Content\bootstrap\bootstrap-theme.css" />
+    <Content Include="Content\bootstrap\bootstrap-theme.min.css" />
+    <Content Include="Content\bootstrap\bootstrap.css" />
+    <Content Include="Content\bootstrap\bootstrap.min.css" />
     <Content Include="Content\flexslider.css" />
+    <Content Include="Content\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Content\Images\bg_direction_nav.png" />
     <Content Include="Content\Images\icons\email-16.png" />
     <Content Include="Content\Images\icons\email-24.png" />
@@ -298,9 +310,15 @@
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\ApiGroup.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\Api.cshtml" />
     <Content Include="Areas\HelpPage\Views\_ViewStart.cshtml" />
+    <Content Include="Content\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="Content\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="Content\fonts\glyphicons-halflings-regular.eot" />
     <None Include="Properties\PublishProfiles\FileDeploy.pubxml" />
     <Content Include="googleed52573d25b1503e.html" />
     <Content Include="robots.txt" />
+    <Content Include="Scripts\BadaBing.js" />
+    <Content Include="Scripts\bootstrap.js" />
+    <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\global.js" />
     <None Include="Properties\PublishProfiles\ftp deploy.pubxml" />
     <None Include="Scripts\jquery-1.9.1.intellisense.js" />
@@ -346,6 +364,10 @@
     <Content Include="Views\Blog\Post.cshtml" />
     <Content Include="Views\Blog\Posts\TestPost.cshtml" />
     <Content Include="Views\Blog\Posts\HelloWorld.cshtml" />
+    <Content Include="Views\Shared\_BadaLayout.cshtml" />
+    <Content Include="Views\Bada\Bing.cshtml" />
+    <Content Include="Views\Bada\Boom.cshtml" />
+    <Content Include="Views\Bada\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

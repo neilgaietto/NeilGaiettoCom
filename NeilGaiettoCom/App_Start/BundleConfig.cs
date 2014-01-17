@@ -27,7 +27,15 @@ namespace NeilGaiettoCom
                         "~/Scripts/global.js",
                         "~/Scripts/jquery.flexslider.js"));
 
-            bundles.Add(new StyleBundle("~/Content/css").Include("~/Content/reset.css","~/Content/site.css", "~/Content/flexslider.css"));
+            bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
+                "~/Scripts/bootstrap.js"));
+            bundles.Add(new ScriptBundle("~/bundles/badabing").Include(
+                "~/Scripts/BadaBing.js"));
+
+            bundles.Add(new StyleBundle("~/Content/css").Include("~/Content/reset.css", "~/Content/site.css", "~/Content/flexslider.css"));
+
+            bundles.Add(new StyleBundle("~/Content/css/bootstrap").Include("~/Content/bootstrap/bootstrap.css", "~/Content/bootstrap/bootstrap-theme.css"));
+
 
             bundles.Add(new StyleBundle("~/Content/themes/base/css").Include(
                         "~/Content/themes/base/jquery.ui.core.css",

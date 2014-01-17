@@ -1,0 +1,26 @@
+﻿@model NeilGaiettoCom.Models.BadaView
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_BadaLayout.cshtml";
+    
+}
+<style>
+    li div {
+        float:left;
+    }
+    li div:nth-child(1) {
+        width: 275px;
+    }
+    li div:nth-child(2) {
+        width: 50px;
+    }
+
+</style>
+
+<h2>Search Terms</h2>
+<ul>
+    @foreach (var t in Model.Trends)
+    {
+        <li><div>@t.Keyword</div> <div>-</div> <div>@t.Added</div></li>
+    }
+</ul>

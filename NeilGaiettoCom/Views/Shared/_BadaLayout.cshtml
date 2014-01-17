@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="author" content="Bada Bing It">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    @Styles.Render("~/Content/css/bootstrap")
+    @Scripts.Render("~/bundles/modernizr")
+    <title>Bada Bing It</title>
+</head>
+
+<body>
+    <div class="container">
+@*      <div class="header">
+        <ul class="nav nav-pills pull-right">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+        <h3 class="text-muted">Project name</h3>
+      </div>*@
+
+
+        @RenderBody()
+@*      <div class="footer">
+        <p>&copy; Company 2013</p>
+      </div>*@
+
+    </div>
+    
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/badabing")
+    @RenderSection("scripts", required: false)
+    <script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-29368003-1']);
+        _gaq.push(['_setDomainName', 'neilgaietto.com']);
+        _gaq.push(['_trackPageview']);
+
+        (function () {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+</body>
+</html>
