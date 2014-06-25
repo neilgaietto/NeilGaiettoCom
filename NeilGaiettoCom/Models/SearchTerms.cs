@@ -9,11 +9,14 @@ namespace NeilGaiettoCom.Models
     public class SearchTerms
     {
         string trendsUrl = "http://www.google.com/trends/hottrends/atom/hourly";
+        //public static string CachePath { get { return HttpContext.Current.Server.MapPath("~\\cache"); } }
+        public static string CachePath { get { return "E:\\Projects\\NeilGaiettoCom\\NeilGaiettoCom\\cache"; } }
+
         public SearchTerms()
         {
 
         }
-        public Term[] GetNew()
+        public IList<Term> GetNew()
         {
             List<Term> trends = new List<Term>();
 
@@ -25,17 +28,35 @@ namespace NeilGaiettoCom.Models
                 trends.Add(new Term { Keyword = link.InnerText, Added = DateTime.Now });
             }
 
-            return trends.ToArray();
+            return trends;
         }
 
-        public Term[] GetExisting()
+        public IList<Term> GetExisting()
         {
-            return new Term[0];
+            if (!BinaryRage.DB<List<Term>>.Exists("TermCache", CachePath))
+            {
+                return new List<Term>();
+            }
+
+            var listOfTerms = BinaryRage.DB<List<Term>>.Get("TermCache", CachePath, false);
+            return listOfTerms;
         }
 
-        public Term[] GetTerms(int take = 20)
+        public void UpdateTerms()
         {
-            var terms = GetNew().Union(GetExisting());
+            var existing = GetExisting();
+            var newTerms = GetNew();
+            //fix to remove dupes because of unique datetime
+            var merged = existing.Union(newTerms.Where(x=>!existing.Contains(x))).Distinct().ToList();
+
+            BinaryRage.DB<List<Term>>.Insert("TermCache", merged, CachePath, false);
+
+        }
+
+        public Term[] GetTerms(int take = 30)
+        {
+            UpdateTerms();
+            var terms = GetExisting();
             return terms.OrderByDescending(x => x.Added).Take(take).ToArray();
         }
     }

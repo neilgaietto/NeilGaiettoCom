@@ -5,6 +5,7 @@ using System.Web;
 
 namespace NeilGaiettoCom.Models
 {
+    [Serializable]
     public class Term
     {
         public string Keyword { get; set; }

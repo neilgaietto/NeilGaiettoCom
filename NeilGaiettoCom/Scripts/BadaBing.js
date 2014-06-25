@@ -18,15 +18,23 @@ BadaBing.Boom = new (function () {
         });
     }
     function activate() {
-        //openNewTab("/Bada/Boom");
-        for (var i = 1; i <= 50; i++) {
-            with ({ i: i }) {
+        $.post("/bada/terms", function (data) {
+            doSearch(data);
+        });
+
+
+    }
+    function doSearch(data) {
+
+        for (var i = 0; i < data.length; i++) {
+            //console.log(data[i].Keyword);
+            with ({ keyword: data[i].Keyword }) {
                 window.setTimeout(function () {
-                    openNewTab("http://www.bing.com/search?q=day+" + i);
+                    openNewTab("http://www.bing.com/search?q=" + keyword);
                 }, i * 1000);
             }
-        }
 
+        }
     }
     function openNewTab(url) {
         instance = window.open("about:blank");
