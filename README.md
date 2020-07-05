@@ -1,6 +1,11 @@
-NeilGaiettoCom
-==============
+# NeilGaietto.com
 
-Neil Gaietto's Site
 
-ASP.NET MVC
+The personal site of Neil Gaietto.
+
+### Built With
+- Vue
+- Quasar 
+
+### Hosting
+- AWS?
