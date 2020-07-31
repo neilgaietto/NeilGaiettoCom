@@ -9,114 +9,115 @@ import Check from '@material-ui/icons/Check';
 import StepConnector from '@material-ui/core/StepConnector';
 
 const QontoConnector = withStyles({
-  alternativeLabel: {
-    top: 10,
-    left: 'calc(-50% + 16px)',
-    right: 'calc(50% + 16px)',
-  },
-  active: {
-    '& $line': {
-      borderColor: '#784af4',
+    alternativeLabel: {
+        top: 10,
+        left: 'calc(-50% + 16px)',
+        right: 'calc(50% + 16px)',
     },
-  },
-  completed: {
-    '& $line': {
-      borderColor: '#784af4',
+    active: {
+        '& $line': {
+            borderColor: '#784af4',
+        },
     },
-  },
-  line: {
-    borderColor: '#eaeaf0',
-    borderTopWidth: 3,
-    borderRadius: 1,
-  },
+    completed: {
+        '& $line': {
+            borderColor: '#784af4',
+        },
+    },
+    line: {
+        borderColor: '#eaeaf0',
+        borderTopWidth: 3,
+        borderRadius: 1,
+    },
 })(StepConnector);
 
 const useQontoStepIconStyles = makeStyles({
-  root: {
-    color: '#eaeaf0',
-    display: 'flex',
-    height: 22,
-    alignItems: 'center',
-  },
-  active: {
-    color: '#784af4',
-  },
-  circle: {
-    width: 8,
-    height: 8,
-    borderRadius: '50%',
-    backgroundColor: 'currentColor',
-  },
-  completed: {
-    color: '#784af4',
-    zIndex: 1,
-    fontSize: 18,
-    width: 8,
-    height: 8,
-    borderRadius: '50%',
-    backgroundColor: 'currentColor',
-  },
+    root: {
+        color: '#eaeaf0',
+        display: 'flex',
+        height: 22,
+        alignItems: 'center',
+    },
+    active: {
+        color: '#784af4',
+    },
+    circle: {
+        width: 8,
+        height: 8,
+        borderRadius: '50%',
+        backgroundColor: 'currentColor',
+    },
+    completed: {
+        color: '#784af4',
+        zIndex: 1,
+        fontSize: 18,
+        width: 8,
+        height: 8,
+        borderRadius: '50%',
+        backgroundColor: 'currentColor',
+    },
 });
 
 function QontoStepIcon(props) {
-  const classes = useQontoStepIconStyles();
-  const { active, completed } = props;
+    const classes = useQontoStepIconStyles();
+    const { active, completed } = props;
 
-  return (
-    <div
-      className={clsx(classes.root, {
-        [classes.active]: active,
-      })}
-    >
-      {completed ? <div className={classes.completed} /> : <div className={classes.circle} />}
-    </div>
-  );
+    return (
+        <div
+            className={clsx(classes.root, {
+                [classes.active]: active,
+            })}
+        >
+            {completed ? <div className={classes.completed} /> : <div className={classes.circle} />}
+        </div>
+    );
 }
 
 QontoStepIcon.propTypes = {
-  /**
-   * Whether this step is active.
-   */
-  active: PropTypes.bool,
-  /**
-   * Mark the step as completed. Is passed to child components.
-   */
-  completed: PropTypes.bool,
+    /**
+     * Whether this step is active.
+     */
+    active: PropTypes.bool,
+    /**
+     * Mark the step as completed. Is passed to child components.
+     */
+    completed: PropTypes.bool,
 };
 
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    width: '100%',
-  },
-  button: {
-    marginRight: theme.spacing(1),
-  },
-  instructions: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  },
+    root: {
+        width: '100%',
+    },
+    button: {
+        marginRight: theme.spacing(1),
+    },
+    instructions: {
+        marginTop: theme.spacing(1),
+        marginBottom: theme.spacing(1),
+    },
 }));
 
 
-export default function Paging() {
-  const classes = useStyles();
-  const [activeStep, setActiveStep] = React.useState(0);
-  const steps = ['About Me','Tech','Experience','Contact'];
+export default function Paging(props) {
+    const classes = useStyles();
+    const [activeStep, setActiveStep] = React.useState(0);
+    const steps = ['About Me', 'Tech', 'Experience', 'Contact'];
 
-  const handlePaging = (i) => {
-    setActiveStep((prevActiveStep) => i);
-  };
+    const handlePaging = (i) => {
+        setActiveStep((prevActiveStep) => i);
+        props.onClick(i);
+    };
 
-  return (
-    <div className={classes.root}>
-      <Stepper alternativeLabel activeStep={activeStep} connector={<QontoConnector />}>
-        {steps.map((label, index) => (
-          <Step key={label}>
-            <StepLabel StepIconComponent={QontoStepIcon} onClick={()=>handlePaging(index)}>{label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-    </div>
-  );
+    return (
+        <div className={classes.root}>
+            <Stepper alternativeLabel activeStep={activeStep} connector={<QontoConnector />}>
+                {steps.map((label, index) => (
+                    <Step key={label}>
+                        <StepLabel StepIconComponent={QontoStepIcon} onClick={() => handlePaging(index)}>{label}</StepLabel>
+                    </Step>
+                ))}
+            </Stepper>
+        </div>
+    );
 }
