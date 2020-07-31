@@ -51,6 +51,10 @@ const useQontoStepIconStyles = makeStyles({
     color: '#784af4',
     zIndex: 1,
     fontSize: 18,
+    width: 8,
+    height: 8,
+    borderRadius: '50%',
+    backgroundColor: 'currentColor',
   },
 });
 
@@ -64,7 +68,7 @@ function QontoStepIcon(props) {
         [classes.active]: active,
       })}
     >
-      {completed ? <Check className={classes.completed} /> : <div className={classes.circle} />}
+      {completed ? <div className={classes.completed} /> : <div className={classes.circle} />}
     </div>
   );
 }
