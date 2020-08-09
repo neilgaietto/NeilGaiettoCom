@@ -24,36 +24,44 @@ export default function ContentSections() {
     const classes = useStyles();
     const [activeContent, setActiveContent] = React.useState(0);
     const [pageDirection, setPageDirection] = React.useState('left');
+    const [pageOutDirection, setPageOutDirection] = React.useState('right');
+    const transition = { enter: 100, exit: 100, appear: 100};
 
     const handlePaging = (i) => {
         if(i > activeContent){
             setPageDirection('left');
+            setPageOutDirection('right');
         }
         else{
             setPageDirection('right');
+            setPageOutDirection('left');
         }
         setActiveContent((prev) => i);
       };
 
+    const getPageDirection = (i) =>{
+        return activeContent == i ? "left" : "right";
+    }
+
     return (
         <div className={classes.root}>
             <Paging onClick={handlePaging} />
-            <Slide direction={pageDirection} in={activeContent == 0} mountOnEnter unmountOnExit>
+            <Slide direction={getPageDirection(0)} in={activeContent == 0} timeout={transition} mountOnEnter unmountOnExit>
                 <Paper variant="outlined" elevation={1}>
                     <About />
                 </Paper>
             </Slide>
-            <Slide direction={pageDirection} in={activeContent == 1} mountOnEnter unmountOnExit>
+            <Slide direction={getPageDirection(1)} in={activeContent == 1} timeout={transition} mountOnEnter unmountOnExit>
                 <Paper variant="outlined" elevation={1}>
                     <Tech />
                 </Paper>
             </Slide>
-            <Slide direction={pageDirection} in={activeContent == 2} mountOnEnter unmountOnExit>
+            <Slide direction={getPageDirection(2)} in={activeContent == 2} timeout={transition} mountOnEnter unmountOnExit>
                 <Paper variant="outlined" elevation={1}>
                     <Experience />
                 </Paper>
             </Slide>
-            <Slide direction={pageDirection} in={activeContent == 3} mountOnEnter unmountOnExit>
+            <Slide direction={getPageDirection(3)} in={activeContent == 3} timeout={transition} mountOnEnter unmountOnExit>
                 <Paper variant="outlined" elevation={1}>
                     <Contact />
                 </Paper>
