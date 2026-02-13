@@ -1,11 +1,9 @@
 # NeilGaietto.com
 
-
-The personal site of Neil Gaietto.
+The personal landing page of Neil Gaietto.
 
 ### Built With
-- Vue
-- Quasar 
+- HTML / CSS (static site)
 
 ### Hosting
-- AWS?
+- AWS
