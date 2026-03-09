@@ -1,11 +1,7 @@
 # NeilGaietto.com
 
+Personal landing page for Neil Gaietto.
 
-The personal site of Neil Gaietto.
-
-### Built With
-- Vue
-- Quasar 
-
-### Hosting
-- AWS?
+**Stack:** Astro, TypeScript
+**Hosting:** Cloudflare Pages
+**Build:** `npm run build` → deploys `dist/`
