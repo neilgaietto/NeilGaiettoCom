@@ -1,4 +1,0 @@
-﻿User-agent: *
-Disallow:
-
-Sitemap: http://www.neilgaietto.com/sitemap.xml

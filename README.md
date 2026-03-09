@@ -1,6 +1,7 @@
-NeilGaiettoCom
-==============
+# NeilGaietto.com
 
-Neil Gaietto's Site
+Personal landing page for Neil Gaietto.
 
-ASP.NET MVC
+**Stack:** Astro, TypeScript
+**Hosting:** Cloudflare Pages
+**Build:** `npm run build` → deploys `dist/`

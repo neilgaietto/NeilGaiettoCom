@@ -1,0 +1,71 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  includeSchema?: boolean;
+}
+
+const { title, description, includeSchema = false } = Astro.props;
+const GA4_ID = 'G-XXXXXXXXXX'; // Replace with your real GA4 Measurement ID
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    <meta name="description" content={description}>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title}>
+    <meta property="og:description" content="Software Architect and Developer based in Apex, NC.">
+    <meta property="og:image" content="https://neilgaietto.com/assets/neil.jpg">
+    <meta property="og:url" content="https://neilgaietto.com">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content={title}>
+    <meta name="twitter:description" content="Software Architect and Developer based in Apex, NC.">
+    <meta name="twitter:image" content="https://neilgaietto.com/assets/neil.jpg">
+
+    {includeSchema && (
+      <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Apex",
+          "addressRegion": "NC"
+        },
+        "email": "neil.gaietto@gmail.com",
+        "jobTitle": "Software Architect/Developer",
+        "name": "Neil Gaietto",
+        "image": "https://neilgaietto.com/assets/neil.jpg",
+        "gender": "male",
+        "url": "https://neilgaietto.com",
+        "sameAs": [
+          "https://www.linkedin.com/in/neilgaietto/",
+          "https://github.com/neilgaietto",
+          "https://www.facebook.com/neil.gaietto"
+        ]
+      })} />
+    )}
+
+    <link href="https://fonts.googleapis.com/css2?family=Maitree&display=swap" rel="stylesheet">
+    <!-- Google Analytics 4 -->
+    <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`}></script>
+    <script define:vars={{ GA4_ID }}>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', GA4_ID);
+    </script>
+</head>
+<body>
+    <slot />
+</body>
+</html>

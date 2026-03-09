@@ -1,8 +1,0 @@
-﻿@model NeilGaiettoCom.Models.Post
-@{
-    ViewBag.Title = "Blog";
-}
-
-<h2>@Model.Title</h2>
-
-@Html.Partial("Posts/"+Model.ContentFile, Model)
