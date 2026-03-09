@@ -1,9 +1,7 @@
 # NeilGaietto.com
 
-The personal landing page of Neil Gaietto.
+Personal landing page for Neil Gaietto.
 
-### Built With
-- HTML / CSS (static site)
-
-### Hosting
-- AWS
+**Stack:** Astro, TypeScript
+**Hosting:** Cloudflare Pages
+**Build:** `npm run build` → deploys `dist/`
