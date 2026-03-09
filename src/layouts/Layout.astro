@@ -1,4 +1,6 @@
 ---
+import '../styles/global.css';
+
 interface Props {
   title: string;
   description: string;
@@ -54,8 +56,6 @@ const GA4_ID = 'G-XXXXXXXXXX'; // Replace with your real GA4 Measurement ID
     )}
 
     <link href="https://fonts.googleapis.com/css2?family=Maitree&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/src/styles/global.css">
-
     <!-- Google Analytics 4 -->
     <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`}></script>
     <script define:vars={{ GA4_ID }}>
