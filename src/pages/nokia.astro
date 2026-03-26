@@ -744,13 +744,23 @@ import Layout from '../layouts/Layout.astro';
 
   /* ── Mobile: full viewport ── */
   @media (max-width: 600px) {
+    /*
+     * position:fixed + inset:0 ensures the phone-page is exactly the
+     * viewport size regardless of the body's flex-direction or any
+     * parent sizing — this prevents the phone-page from being only as
+     * wide as its 272px content, which would clip the scaled phone.
+     */
     .phone-page {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       padding: 0;
-      height: 100vh;
-      height: 100svh;
-      overflow: hidden;
-      justify-content: center;
+      min-height: unset;
+      display: flex;
       align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
     .phone {
       will-change: transform;
@@ -1080,7 +1090,7 @@ import Layout from '../layouts/Layout.astro';
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const pw = phone.offsetWidth;
-    const ph = phone.scrollHeight;
+    const ph = phone.offsetHeight; // offsetHeight = visible layout height; scrollHeight can be inflated by overflow:hidden children
     const scale = Math.min(vw / pw, vh / ph) * 0.97;
     phone.style.transform = `scale(${scale})`;
     phone.style.transformOrigin = 'center center';
