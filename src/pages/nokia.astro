@@ -94,32 +94,24 @@ import Layout from '../layouts/Layout.astro';
     <!-- Navigation zone -->
     <div class="nav-zone">
 
-      <!-- Row 1: soft keys + up -->
-      <div class="nav-row-top">
-        <button class="soft-key-btn" id="btn-options" type="button" aria-label="Options">
-          <span class="sk-inner">&#9632;</span>
-          <span class="sk-label">Options</span>
-        </button>
-        <button class="dpad-btn dpad-up" id="btn-up" type="button" aria-label="Up">&#9650;</button>
-        <button class="soft-key-btn" id="btn-back" type="button" aria-label="Back">
-          <span class="sk-inner">&#9632;</span>
-          <span class="sk-label">Back</span>
-        </button>
+      <!-- Soft keys (context-sensitive labels mirroring screen footer) -->
+      <div class="soft-keys-bar">
+        <button class="soft-oval" id="btn-options" type="button">Options</button>
+        <button class="soft-oval" id="btn-back" type="button">Back</button>
       </div>
 
-      <!-- Row 2: left / ok / right -->
-      <div class="nav-row-mid">
-        <button class="dpad-btn dpad-side" id="btn-left" type="button" aria-label="Left">&#9664;</button>
-        <button class="dpad-ok" id="btn-ok" type="button" aria-label="OK">OK</button>
-        <button class="dpad-btn dpad-side" id="btn-right" type="button" aria-label="Right">&#9654;</button>
+      <!-- Round nav disc -->
+      <div class="disc-wrap">
+        <div class="nav-disc">
+          <button class="nd nd-up"    id="btn-up"    type="button" aria-label="Up">&#9650;</button>
+          <button class="nd nd-left"  id="btn-left"  type="button" aria-label="Left">&#9664;</button>
+          <button class="nd-center"   id="btn-ok"    type="button" aria-label="OK">OK</button>
+          <button class="nd nd-right" id="btn-right" type="button" aria-label="Right">&#9654;</button>
+          <button class="nd nd-down"  id="btn-down"  type="button" aria-label="Down">&#9660;</button>
+        </div>
       </div>
 
-      <!-- Row 3: down -->
-      <div class="nav-row-down">
-        <button class="dpad-btn dpad-down" id="btn-down" type="button" aria-label="Down">&#9660;</button>
-      </div>
-
-      <!-- Row 4: call / clear / end -->
+      <!-- Call / Clear / End -->
       <div class="action-row">
         <button class="action-btn call-btn" id="btn-call" type="button" aria-label="Send message">
           &#9990;
@@ -433,10 +425,11 @@ import Layout from '../layouts/Layout.astro';
     word-break: break-all;
     white-space: pre-wrap;
   }
+  /* Pending char shown as inverted block (classic Nokia highlight) */
   .txt-pending {
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 2px;
+    background: #0d350d;
+    color: #8bab0d;
+    padding: 0 1px;
   }
   @keyframes cursor-blink {
     0%, 49% { opacity: 1; }
@@ -488,95 +481,114 @@ import Layout from '../layouts/Layout.astro';
   .nav-zone {
     margin-bottom: 8px;
   }
-  .nav-row-top {
+
+  /* Soft key ovals — match Nokia's wide flat context buttons */
+  .soft-keys-bar {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    margin-bottom: 3px;
+    margin-bottom: 6px;
   }
-  .nav-row-mid {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 3px;
+  .soft-oval {
+    width: 76px;
+    height: 22px;
+    border-radius: 11px;
+    background: linear-gradient(to bottom, #2858c8 0%, #1c44a4 100%);
+    border: 1px solid #102070;
+    border-bottom-color: #091850;
+    color: white;
+    font-family: 'Arial', sans-serif;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #091850, inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: transform 60ms, box-shadow 60ms;
+    -webkit-tap-highlight-color: transparent;
   }
-  .nav-row-down {
+  .soft-oval:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 #091850;
+  }
+
+  /* Round nav disc — single domed button with 5 zones */
+  .disc-wrap {
     display: flex;
     justify-content: center;
     margin-bottom: 8px;
   }
-
-  /* Soft key pills */
-  .soft-key-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    background: linear-gradient(to bottom, #2858c8 0%, #1c44a4 100%);
-    border: 1px solid #102070;
-    border-radius: 10px;
-    padding: 4px 10px;
-    color: white;
-    cursor: pointer;
-    box-shadow: 0 2px 0 #091850, inset 0 1px 0 rgba(255,255,255,0.18);
-    transition: transform 60ms, box-shadow 60ms;
-    min-width: 60px;
-  }
-  .soft-key-btn:active {
-    transform: translateY(1px);
-    box-shadow: 0 1px 0 #091850;
-  }
-  .sk-inner {
-    font-size: 8px;
-    color: rgba(255,255,255,0.7);
-    line-height: 1;
-  }
-  .sk-label {
-    font-family: 'Arial', sans-serif;
-    font-size: 8px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    white-space: nowrap;
-  }
-
-  /* D-pad buttons */
-  .dpad-btn {
-    background: linear-gradient(to bottom, #2050bc 0%, #163899 100%);
-    border: 1px solid #0e2070;
+  .nav-disc {
+    position: relative;
+    width: 76px;
+    height: 76px;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    background: radial-gradient(circle at 38% 33%, #3a68e4 0%, #1c42bc 40%, #1232a8 100%);
+    box-shadow:
+      0 4px 0 #081440,
+      0 0 0 1.5px #0a1c70,
+      inset 0 2px 0 rgba(255,255,255,0.24),
+      inset 0 -2px 4px rgba(0,0,0,0.22);
+  }
+  /* Direction zones — transparent hit areas on the disc */
+  .nd {
+    position: absolute;
+    background: transparent;
+    border: none;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255,255,255,0.8);
-    font-size: 9px;
-    cursor: pointer;
-    box-shadow: 0 2px 0 #081445, inset 0 1px 0 rgba(255,255,255,0.14);
-    transition: transform 60ms, box-shadow 60ms;
+    color: rgba(255,255,255,0.7);
+    font-size: 8px;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 60ms;
   }
-  .dpad-btn:active {
-    transform: translateY(1px);
-    box-shadow: 0 1px 0 #081445;
+  .nd:active { background: rgba(255,255,255,0.14); }
+  .nd-up {
+    top: 0; left: 18%; width: 64%; height: 33%;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    align-items: flex-start;
+    padding-top: 5px;
   }
-  .dpad-ok {
-    background: linear-gradient(to bottom, #2c5ecc 0%, #1e44a8 100%);
-    border: 1px solid #102075;
+  .nd-down {
+    bottom: 0; left: 18%; width: 64%; height: 33%;
+    border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    align-items: flex-end;
+    padding-bottom: 5px;
+  }
+  .nd-left {
+    left: 0; top: 18%; width: 33%; height: 64%;
+    border-radius: 50% 0 0 50% / 100% 0 0 100%;
+    justify-content: flex-start;
+    padding-left: 5px;
+  }
+  .nd-right {
+    right: 0; top: 18%; width: 33%; height: 64%;
+    border-radius: 0 50% 50% 0 / 0 100% 100% 0;
+    justify-content: flex-end;
+    padding-right: 5px;
+  }
+  /* Center OK button — raised puck on top of disc */
+  .nd-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px; height: 30px;
     border-radius: 50%;
-    width: 38px;
-    height: 38px;
+    background: radial-gradient(circle at 40% 35%, #4c7cf0, #1c48cc);
+    border: 1.5px solid rgba(255,255,255,0.12);
     color: white;
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 700;
     font-family: 'Arial', sans-serif;
     cursor: pointer;
-    box-shadow: 0 2px 0 #091850, inset 0 1px 0 rgba(255,255,255,0.2);
-    transition: transform 60ms, box-shadow 60ms;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.28);
+    z-index: 2;
+    -webkit-tap-highlight-color: transparent;
   }
-  .dpad-ok:active {
-    transform: translateY(1px);
-    box-shadow: 0 1px 0 #091850;
+  .nd-center:active {
+    filter: brightness(0.82);
+    transform: translate(-50%, -50%) scale(0.95);
   }
 
   /* Call / Clear / End row */
@@ -718,23 +730,46 @@ import Layout from '../layouts/Layout.astro';
     color: rgba(255,255,255,0.85);
   }
 
-  /* ── Key-press highlight on active ── */
+  /* ── Key-press highlight ── */
   .num-key.key-flash,
-  .dpad-btn.key-flash,
-  .dpad-ok.key-flash,
-  .soft-key-btn.key-flash,
+  .soft-oval.key-flash,
+  .nd-center.key-flash,
   .action-btn.key-flash,
   .backspace-btn.key-flash {
-    filter: brightness(1.25);
+    filter: brightness(1.28);
+  }
+  .nd.key-flash {
+    background: rgba(255,255,255,0.18) !important;
   }
 
-  /* ── Responsive: scale down on small viewports ── */
-  @media (max-height: 680px) {
-    .phone-page { padding-top: 12px; }
-  }
-  @media (max-width: 320px) {
-    .phone { width: 250px; }
-    .kn { font-size: 17px; }
+  /* ── Mobile: full viewport ── */
+  @media (max-width: 600px) {
+    .phone-page {
+      padding: 0;
+      height: 100vh;
+      height: 100svh;
+      overflow: hidden;
+      justify-content: center;
+      align-items: center;
+    }
+    .phone {
+      will-change: transform;
+    }
+    /* Back link becomes a floating pill */
+    .exit-link {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      padding: 5px 18px;
+      border-radius: 20px;
+      z-index: 200;
+      font-size: 12px;
+    }
   }
 </style>
 
@@ -970,7 +1005,7 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-end')?.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     flash(document.getElementById('btn-end'));
-    // End: cancel pending and clear current message
+    // End: cancel pending then clear message
     if (pendingKey !== null) {
       if (commitTimer !== null) { clearTimeout(commitTimer); commitTimer = null; }
       pendingKey = null; pendingIdx = 0;
@@ -978,6 +1013,28 @@ import Layout from '../layouts/Layout.astro';
       committed = '';
     }
     render();
+  });
+
+  // OK button: commit current pending char (like pressing a different key)
+  document.getElementById('btn-ok')?.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    flash(document.getElementById('btn-ok'));
+    commitPending();
+  });
+
+  // Back soft key: same as backspace
+  document.getElementById('btn-back')?.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    flash(document.getElementById('btn-back'));
+    handleBackspace();
+  });
+
+  // Nav disc directional buttons — highlight only for now
+  (['btn-up', 'btn-down', 'btn-left', 'btn-right'] as const).forEach(id => {
+    document.getElementById(id)?.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      flash(document.getElementById(id));
+    });
   });
 
   // ── Physical keyboard support ──
@@ -1013,9 +1070,28 @@ import Layout from '../layouts/Layout.astro';
     }, 2000);
   }
 
+  // ── Mobile viewport scaling ──
+  function scalePhoneToViewport() {
+    const phone = document.getElementById('phone');
+    if (!phone) return;
+    // Reset first so we measure natural dimensions
+    phone.style.transform = 'none';
+    if (window.innerWidth > 600) return;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const pw = phone.offsetWidth;
+    const ph = phone.scrollHeight;
+    const scale = Math.min(vw / pw, vh / ph) * 0.97;
+    phone.style.transform = `scale(${scale})`;
+    phone.style.transformOrigin = 'center center';
+  }
+  window.addEventListener('resize', scalePhoneToViewport);
+  window.addEventListener('orientationchange', () => setTimeout(scalePhoneToViewport, 150));
+
   // ── Init ──
   updateClock();
   setInterval(updateClock, 15000);
   render();
   runStartup();
+  scalePhoneToViewport();
 </script>
