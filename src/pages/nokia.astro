@@ -1,0 +1,1021 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Nokia — NeilGaietto.com"
+  description="Remember texting on a Nokia? Relive the classic multi-tap text experience."
+>
+<div class="phone-page">
+  <div class="phone" id="phone">
+
+    <!-- Startup overlay -->
+    <div class="startup-overlay" id="startup-overlay">
+      <div class="startup-hands">
+        <svg viewBox="0 0 80 40" width="80" height="40" aria-hidden="true">
+          <path d="M10 30 Q20 10 40 20 Q60 10 70 30" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M15 32 Q25 14 40 22 Q55 14 65 32" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="startup-nokia">Nokia</div>
+      <div class="startup-tagline">Connecting People</div>
+    </div>
+
+    <!-- Antenna -->
+    <div class="phone-antenna"></div>
+
+    <!-- Top section: earpiece + logo -->
+    <div class="phone-top-section">
+      <div class="earpiece-row">
+        <div class="earpiece-slot"></div>
+        <div class="earpiece-slot"></div>
+        <div class="earpiece-slot"></div>
+        <div class="earpiece-slot"></div>
+        <div class="earpiece-slot"></div>
+      </div>
+    </div>
+    <div class="nokia-brand-text">Nokia</div>
+
+    <!-- Screen housing -->
+    <div class="screen-housing">
+      <div class="lcd-display" id="lcd-display">
+
+        <!-- Status bar -->
+        <div class="lcd-status">
+          <div class="signal-bars" aria-label="Signal strength">
+            <span class="sig-bar" style="height:3px"></span>
+            <span class="sig-bar" style="height:5px"></span>
+            <span class="sig-bar" style="height:7px"></span>
+            <span class="sig-bar" style="height:9px"></span>
+          </div>
+          <span class="operator-name">Nokia</span>
+          <div class="status-right">
+            <span id="clock-display">12:00</span>
+            <div class="battery-wrap" aria-label="Battery">
+              <div class="battery-body">
+                <div class="battery-fill"></div>
+              </div>
+              <div class="battery-nub"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SMS compose view -->
+        <div id="view-compose" class="lcd-view">
+          <div class="view-header">New Message</div>
+          <div class="view-rule"></div>
+          <div class="compose-scroll-outer">
+            <div class="compose-text-inner">
+              <span id="txt-committed"></span><span
+                id="txt-pending" class="txt-pending"></span><span
+                id="txt-cursor" class="txt-cursor">&#9608;</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sending / sent view -->
+        <div id="view-sending" class="lcd-view lcd-view-hidden">
+          <div class="center-view">
+            <div class="send-envelope">&#9993;</div>
+            <div id="send-status-text" class="send-status-text">Sending...</div>
+          </div>
+        </div>
+
+        <!-- LCD footer -->
+        <div class="lcd-footer">
+          <span class="footer-label">Options</span>
+          <span id="caps-label" class="caps-label">abc</span>
+          <span id="chars-left" class="chars-left">160</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Navigation zone -->
+    <div class="nav-zone">
+
+      <!-- Row 1: soft keys + up -->
+      <div class="nav-row-top">
+        <button class="soft-key-btn" id="btn-options" type="button" aria-label="Options">
+          <span class="sk-inner">&#9632;</span>
+          <span class="sk-label">Options</span>
+        </button>
+        <button class="dpad-btn dpad-up" id="btn-up" type="button" aria-label="Up">&#9650;</button>
+        <button class="soft-key-btn" id="btn-back" type="button" aria-label="Back">
+          <span class="sk-inner">&#9632;</span>
+          <span class="sk-label">Back</span>
+        </button>
+      </div>
+
+      <!-- Row 2: left / ok / right -->
+      <div class="nav-row-mid">
+        <button class="dpad-btn dpad-side" id="btn-left" type="button" aria-label="Left">&#9664;</button>
+        <button class="dpad-ok" id="btn-ok" type="button" aria-label="OK">OK</button>
+        <button class="dpad-btn dpad-side" id="btn-right" type="button" aria-label="Right">&#9654;</button>
+      </div>
+
+      <!-- Row 3: down -->
+      <div class="nav-row-down">
+        <button class="dpad-btn dpad-down" id="btn-down" type="button" aria-label="Down">&#9660;</button>
+      </div>
+
+      <!-- Row 4: call / clear / end -->
+      <div class="action-row">
+        <button class="action-btn call-btn" id="btn-call" type="button" aria-label="Send message">
+          &#9990;
+        </button>
+        <button class="backspace-btn" id="btn-clear" type="button" aria-label="Backspace">
+          &#9003;
+        </button>
+        <button class="action-btn end-btn" id="btn-end" type="button" aria-label="End">
+          &#10006;
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Keypad -->
+    <div class="keypad">
+      <div class="keypad-row">
+        <button class="num-key" data-key="1" type="button">
+          <span class="kn">1</span><span class="kc">.,!?</span>
+        </button>
+        <button class="num-key" data-key="2" type="button">
+          <span class="kn">2</span><span class="kc">ABC</span>
+        </button>
+        <button class="num-key" data-key="3" type="button">
+          <span class="kn">3</span><span class="kc">DEF</span>
+        </button>
+      </div>
+      <div class="keypad-row">
+        <button class="num-key" data-key="4" type="button">
+          <span class="kn">4</span><span class="kc">GHI</span>
+        </button>
+        <button class="num-key" data-key="5" type="button">
+          <span class="kn">5</span><span class="kc">JKL</span>
+        </button>
+        <button class="num-key" data-key="6" type="button">
+          <span class="kn">6</span><span class="kc">MNO</span>
+        </button>
+      </div>
+      <div class="keypad-row">
+        <button class="num-key" data-key="7" type="button">
+          <span class="kn">7</span><span class="kc">PQRS</span>
+        </button>
+        <button class="num-key" data-key="8" type="button">
+          <span class="kn">8</span><span class="kc">TUV</span>
+        </button>
+        <button class="num-key" data-key="9" type="button">
+          <span class="kn">9</span><span class="kc">WXYZ</span>
+        </button>
+      </div>
+      <div class="keypad-row">
+        <button class="num-key sym-key" data-key="*" type="button">
+          <span class="kn">&#10033;</span><span class="kc">shift</span>
+        </button>
+        <button class="num-key" data-key="0" type="button">
+          <span class="kn">0</span><span class="kc">+</span>
+        </button>
+        <button class="num-key sym-key" data-key="#" type="button">
+          <span class="kn">#</span><span class="kc">space</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chin -->
+    <div class="phone-chin">
+      <div class="chin-port"></div>
+    </div>
+
+  </div><!-- /.phone -->
+
+  <a href="/" class="exit-link">&#8592; back to site</a>
+</div>
+</Layout>
+
+<style is:global>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+  body {
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+</style>
+
+<style>
+  /* ── Page wrapper ── */
+  .phone-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 28px 16px 48px;
+    box-sizing: border-box;
+  }
+
+  /* ── Phone body ── */
+  .phone {
+    position: relative;
+    width: 272px;
+    background: linear-gradient(168deg, #1e3a9e 0%, #152878 45%, #0f1d5e 100%);
+    border-radius: 30px 30px 22px 22px;
+    padding: 14px 12px 10px;
+    box-shadow:
+      0 0 0 1.5px #0a1440,
+      inset 0 2px 0 rgba(255,255,255,0.12),
+      inset -2px 0 4px rgba(0,0,0,0.25),
+      6px 10px 40px rgba(0,0,0,0.7),
+      0 0 80px rgba(0,0,0,0.4);
+    user-select: none;
+    overflow: hidden;
+  }
+
+  /* ── Startup overlay ── */
+  .startup-overlay {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: inherit;
+    transition: opacity 0.6s ease;
+  }
+  .startup-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .startup-hands {
+    opacity: 0.9;
+    margin-bottom: 4px;
+  }
+  .startup-nokia {
+    font-family: 'Arial', sans-serif;
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #fff;
+    text-transform: uppercase;
+  }
+  .startup-tagline {
+    font-family: 'Arial', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+  }
+
+  /* ── Antenna ── */
+  .phone-antenna {
+    position: absolute;
+    top: -18px;
+    right: 28px;
+    width: 8px;
+    height: 22px;
+    background: linear-gradient(to right, #1a3080, #2550c0, #1a3080);
+    border-radius: 3px 3px 0 0;
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.4);
+  }
+
+  /* ── Earpiece ── */
+  .phone-top-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+    padding-top: 2px;
+  }
+  .earpiece-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .earpiece-slot {
+    width: 14px;
+    height: 3px;
+    background: #080e28;
+    border-radius: 2px;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.7);
+  }
+
+  /* ── Nokia brand text ── */
+  .nokia-brand-text {
+    text-align: center;
+    font-family: 'Arial Narrow', 'Arial', sans-serif;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* ── Screen housing (recessed) ── */
+  .screen-housing {
+    background: #060c24;
+    border-radius: 6px;
+    padding: 7px;
+    margin-bottom: 10px;
+    box-shadow:
+      inset 0 3px 8px rgba(0,0,0,0.9),
+      inset 0 0 0 1px #03061a;
+  }
+
+  /* ── LCD display ── */
+  .lcd-display {
+    background: #8bab0d;
+    border-radius: 2px;
+    overflow: hidden;
+    /* Dot-matrix pixel grid */
+    background-image:
+      radial-gradient(circle, rgba(0,0,0,0.18) 1px, transparent 1px);
+    background-size: 2.5px 2.5px;
+    font-family: 'VT323', 'Courier New', monospace;
+    color: #0d350d;
+  }
+
+  /* ── Status bar ── */
+  .lcd-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 5px 2px;
+    background: rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(0,0,0,0.18);
+    font-size: 11px;
+    line-height: 1;
+  }
+  .signal-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5px;
+    height: 10px;
+  }
+  .sig-bar {
+    width: 2.5px;
+    background: #0d350d;
+    display: inline-block;
+    border-radius: 0.5px 0.5px 0 0;
+  }
+  .operator-name {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  .status-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+  }
+  .battery-wrap {
+    display: flex;
+    align-items: center;
+  }
+  .battery-body {
+    width: 13px;
+    height: 7px;
+    border: 1.5px solid #0d350d;
+    border-radius: 1px;
+    padding: 1px;
+    box-sizing: border-box;
+  }
+  .battery-fill {
+    height: 100%;
+    width: 75%;
+    background: #0d350d;
+    border-radius: 0.5px;
+  }
+  .battery-nub {
+    width: 2px;
+    height: 3px;
+    background: #0d350d;
+    border-radius: 0 1px 1px 0;
+  }
+
+  /* ── Views ── */
+  .lcd-view {
+    display: block;
+  }
+  .lcd-view-hidden {
+    display: none;
+  }
+
+  /* ── Compose view ── */
+  .view-header {
+    font-size: 13px;
+    padding: 3px 5px 1px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .view-rule {
+    height: 1px;
+    background: rgba(13,53,13,0.35);
+    margin: 0 5px 3px;
+  }
+  .compose-scroll-outer {
+    height: 72px;
+    overflow: hidden;
+    position: relative;
+    padding: 0 5px;
+  }
+  .compose-text-inner {
+    position: absolute;
+    bottom: 2px;
+    left: 5px;
+    right: 5px;
+    font-size: 18px;
+    line-height: 1.25;
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
+  .txt-pending {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 2px;
+  }
+  @keyframes cursor-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+  .txt-cursor {
+    animation: cursor-blink 1s step-end infinite;
+    font-size: 16px;
+    vertical-align: middle;
+  }
+
+  /* ── Sending view ── */
+  .center-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 0 14px;
+    gap: 6px;
+  }
+  .send-envelope {
+    font-size: 28px;
+    line-height: 1;
+  }
+  .send-status-text {
+    font-size: 16px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── LCD footer ── */
+  .lcd-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 5px 3px;
+    border-top: 1px solid rgba(0,0,0,0.18);
+    background: rgba(0,0,0,0.07);
+    font-size: 11px;
+  }
+  .caps-label {
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+  .chars-left {
+    font-size: 11px;
+  }
+
+  /* ── Navigation zone ── */
+  .nav-zone {
+    margin-bottom: 8px;
+  }
+  .nav-row-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3px;
+  }
+  .nav-row-mid {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+  .nav-row-down {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  /* Soft key pills */
+  .soft-key-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    background: linear-gradient(to bottom, #2858c8 0%, #1c44a4 100%);
+    border: 1px solid #102070;
+    border-radius: 10px;
+    padding: 4px 10px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #091850, inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: transform 60ms, box-shadow 60ms;
+    min-width: 60px;
+  }
+  .soft-key-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 #091850;
+  }
+  .sk-inner {
+    font-size: 8px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1;
+  }
+  .sk-label {
+    font-family: 'Arial', sans-serif;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  /* D-pad buttons */
+  .dpad-btn {
+    background: linear-gradient(to bottom, #2050bc 0%, #163899 100%);
+    border: 1px solid #0e2070;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.8);
+    font-size: 9px;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #081445, inset 0 1px 0 rgba(255,255,255,0.14);
+    transition: transform 60ms, box-shadow 60ms;
+  }
+  .dpad-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 #081445;
+  }
+  .dpad-ok {
+    background: linear-gradient(to bottom, #2c5ecc 0%, #1e44a8 100%);
+    border: 1px solid #102075;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    font-family: 'Arial', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #091850, inset 0 1px 0 rgba(255,255,255,0.2);
+    transition: transform 60ms, box-shadow 60ms;
+  }
+  .dpad-ok:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 #091850;
+  }
+
+  /* Call / Clear / End row */
+  .action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
+  }
+  .action-btn {
+    width: 56px;
+    height: 28px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    color: white;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: transform 60ms, box-shadow 60ms;
+  }
+  .action-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.45);
+  }
+  .call-btn {
+    background: linear-gradient(to bottom, #2e9c2e 0%, #1e7020 100%);
+    border-color: #0f5010;
+  }
+  .end-btn {
+    background: linear-gradient(to bottom, #d41818 0%, #a01010 100%);
+    border-color: #700808;
+  }
+  .backspace-btn {
+    background: linear-gradient(to bottom, #2858c8 0%, #1c44a4 100%);
+    border: 1px solid #102070;
+    border-radius: 8px;
+    width: 38px;
+    height: 26px;
+    color: white;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #091850, inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: transform 60ms, box-shadow 60ms;
+  }
+  .backspace-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 #091850;
+  }
+
+  /* ── Keypad ── */
+  .keypad {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 4px;
+  }
+  .keypad-row {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+  }
+  .num-key {
+    flex: 1;
+    background: linear-gradient(to bottom, #2858c8 0%, #1c44a4 60%, #1a3e9a 100%);
+    border: 1px solid #0e2070;
+    border-bottom-color: #091850;
+    border-radius: 7px;
+    padding: 7px 4px 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    cursor: pointer;
+    box-shadow:
+      0 3px 0 #091850,
+      inset 0 1px 0 rgba(255,255,255,0.2);
+    transition: transform 60ms, box-shadow 60ms;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .num-key:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #091850, inset 0 2px 3px rgba(0,0,0,0.2);
+  }
+  .kn {
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    display: block;
+  }
+  .kc {
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    font-size: 7px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.4px;
+    display: block;
+    margin-top: 2px;
+  }
+  .sym-key .kn {
+    font-size: 15px;
+  }
+
+  /* ── Chin ── */
+  .phone-chin {
+    display: flex;
+    justify-content: center;
+    padding: 6px 0 2px;
+  }
+  .chin-port {
+    width: 22px;
+    height: 5px;
+    background: #060c24;
+    border-radius: 3px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.9);
+  }
+
+  /* ── Exit link ── */
+  .exit-link {
+    display: block;
+    margin-top: 22px;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    font-family: 'Arial', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    transition: color 0.2s;
+  }
+  .exit-link:hover {
+    color: rgba(255,255,255,0.85);
+  }
+
+  /* ── Key-press highlight on active ── */
+  .num-key.key-flash,
+  .dpad-btn.key-flash,
+  .dpad-ok.key-flash,
+  .soft-key-btn.key-flash,
+  .action-btn.key-flash,
+  .backspace-btn.key-flash {
+    filter: brightness(1.25);
+  }
+
+  /* ── Responsive: scale down on small viewports ── */
+  @media (max-height: 680px) {
+    .phone-page { padding-top: 12px; }
+  }
+  @media (max-width: 320px) {
+    .phone { width: 250px; }
+    .kn { font-size: 17px; }
+  }
+</style>
+
+<script>
+  // ── Key maps: multi-tap character sets ──
+  const KEY_MAPS: Record<string, string[]> = {
+    '1': ['.', ',', '?', '!', '-', '\'', '@', '1'],
+    '2': ['a', 'b', 'c', '2'],
+    '3': ['d', 'e', 'f', '3'],
+    '4': ['g', 'h', 'i', '4'],
+    '5': ['j', 'k', 'l', '5'],
+    '6': ['m', 'n', 'o', '6'],
+    '7': ['p', 'q', 'r', 's', '7'],
+    '8': ['t', 'u', 'v', '8'],
+    '9': ['w', 'x', 'y', 'z', '9'],
+    '0': [' ', '0'],
+  };
+
+  const COMMIT_DELAY = 1200;
+  const SMS_LIMIT = 160;
+
+  // 0 = lowercase (abc), 1 = sentence (Abc), 2 = caps (ABC)
+  const CAPS_LABELS = ['abc', 'Abc', 'ABC'];
+
+  let committed = '';
+  let pendingKey: string | null = null;
+  let pendingIdx = 0;
+  let commitTimer: ReturnType<typeof setTimeout> | null = null;
+  let capsMode = 1; // start in sentence-case
+  let sending = false;
+
+  // ── Case logic ──
+  function applyCase(char: string): string {
+    if (capsMode === 2) return char.toUpperCase();
+    if (capsMode === 0) return char.toLowerCase();
+    // Sentence case: uppercase at start or after sentence-ending punctuation + space
+    if (committed.length === 0) return char.toUpperCase();
+    const t = committed.trimEnd();
+    if (t.length === 0) return char.toUpperCase();
+    const last = t[t.length - 1];
+    if (last === '.' || last === '!' || last === '?') return char.toUpperCase();
+    return char.toLowerCase();
+  }
+
+  // ── Commit the pending character ──
+  function commitPending() {
+    if (commitTimer !== null) {
+      clearTimeout(commitTimer);
+      commitTimer = null;
+    }
+    if (pendingKey !== null) {
+      const chars = KEY_MAPS[pendingKey];
+      if (chars && committed.length < SMS_LIMIT) {
+        committed += applyCase(chars[pendingIdx]);
+      }
+      pendingKey = null;
+      pendingIdx = 0;
+    }
+    render();
+  }
+
+  // ── Handle a number key press ──
+  function handleNumKey(key: string) {
+    if (sending) return;
+    const chars = KEY_MAPS[key];
+    if (!chars) return;
+
+    const totalUsed = committed.length + (pendingKey !== null ? 1 : 0);
+    if (totalUsed >= SMS_LIMIT && pendingKey !== key) return;
+
+    vibrate();
+
+    if (pendingKey === key) {
+      // Same key again: cancel timer and cycle
+      if (commitTimer !== null) {
+        clearTimeout(commitTimer);
+        commitTimer = null;
+      }
+      pendingIdx = (pendingIdx + 1) % chars.length;
+    } else {
+      // Different key: commit pending first, start new
+      commitPending();
+      if (committed.length >= SMS_LIMIT) return;
+      pendingKey = key;
+      pendingIdx = 0;
+    }
+
+    commitTimer = setTimeout(commitPending, COMMIT_DELAY);
+    render();
+  }
+
+  // ── Backspace ──
+  function handleBackspace() {
+    if (sending) return;
+    vibrate();
+    if (pendingKey !== null) {
+      // Cancel pending char without committing
+      if (commitTimer !== null) {
+        clearTimeout(commitTimer);
+        commitTimer = null;
+      }
+      pendingKey = null;
+      pendingIdx = 0;
+    } else if (committed.length > 0) {
+      committed = committed.slice(0, -1);
+    }
+    render();
+  }
+
+  // ── Cycle caps mode ──
+  function cycleCaps() {
+    if (sending) return;
+    commitPending();
+    capsMode = (capsMode + 1) % 3;
+    renderCaps();
+  }
+
+  // ── Add a space (# shortcut) ──
+  function addSpace() {
+    if (sending) return;
+    commitPending();
+    if (committed.length < SMS_LIMIT) {
+      committed += ' ';
+      render();
+    }
+  }
+
+  // ── Send / Call button ──
+  function handleSend() {
+    if (sending) return;
+    commitPending();
+    if (committed.trim().length === 0) return;
+    vibrate();
+
+    sending = true;
+    const composeView = document.getElementById('view-compose');
+    const sendView = document.getElementById('view-sending');
+    const statusText = document.getElementById('send-status-text');
+
+    if (composeView) composeView.classList.add('lcd-view-hidden');
+    if (sendView) sendView.classList.remove('lcd-view-hidden');
+    if (statusText) statusText.textContent = 'Sending...';
+
+    setTimeout(() => {
+      if (statusText) statusText.textContent = 'Message Sent!';
+      setTimeout(() => {
+        committed = '';
+        sending = false;
+        if (composeView) composeView.classList.remove('lcd-view-hidden');
+        if (sendView) sendView.classList.add('lcd-view-hidden');
+        render();
+      }, 1600);
+    }, 1000);
+  }
+
+  // ── Render the screen text ──
+  function render() {
+    const committedEl = document.getElementById('txt-committed');
+    const pendingEl = document.getElementById('txt-pending');
+    const counterEl = document.getElementById('chars-left');
+
+    if (committedEl) committedEl.textContent = committed;
+
+    if (pendingEl) {
+      if (pendingKey !== null && KEY_MAPS[pendingKey]) {
+        pendingEl.textContent = applyCase(KEY_MAPS[pendingKey][pendingIdx]);
+      } else {
+        pendingEl.textContent = '';
+      }
+    }
+
+    if (counterEl) {
+      const used = committed.length + (pendingKey !== null ? 1 : 0);
+      counterEl.textContent = String(SMS_LIMIT - used);
+    }
+  }
+
+  function renderCaps() {
+    const el = document.getElementById('caps-label');
+    if (el) el.textContent = CAPS_LABELS[capsMode];
+  }
+
+  // ── Clock ──
+  function updateClock() {
+    const el = document.getElementById('clock-display');
+    if (!el) return;
+    const now = new Date();
+    const h = now.getHours().toString().padStart(2, '0');
+    const m = now.getMinutes().toString().padStart(2, '0');
+    el.textContent = `${h}:${m}`;
+  }
+
+  // ── Haptic ──
+  function vibrate() {
+    if ('vibrate' in navigator) navigator.vibrate(18);
+  }
+
+  // ── Flash visual feedback on a button ──
+  function flash(el: Element | null) {
+    if (!el) return;
+    el.classList.add('key-flash');
+    setTimeout(() => el.classList.remove('key-flash'), 120);
+  }
+
+  // ── Wire up keypad ──
+  document.querySelectorAll<HTMLButtonElement>('.num-key').forEach(btn => {
+    const key = btn.dataset.key;
+    if (!key) return;
+    btn.addEventListener('pointerdown', () => {
+      flash(btn);
+      if (key === '*') {
+        cycleCaps();
+      } else if (key === '#') {
+        addSpace();
+      } else {
+        handleNumKey(key);
+      }
+    });
+  });
+
+  document.getElementById('btn-clear')?.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    flash(document.getElementById('btn-clear'));
+    handleBackspace();
+  });
+
+  document.getElementById('btn-call')?.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    flash(document.getElementById('btn-call'));
+    handleSend();
+  });
+
+  document.getElementById('btn-end')?.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    flash(document.getElementById('btn-end'));
+    // End: cancel pending and clear current message
+    if (pendingKey !== null) {
+      if (commitTimer !== null) { clearTimeout(commitTimer); commitTimer = null; }
+      pendingKey = null; pendingIdx = 0;
+    } else if (committed.length > 0) {
+      committed = '';
+    }
+    render();
+  });
+
+  // ── Physical keyboard support ──
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.repeat) return;
+    const k = e.key;
+    if (k >= '0' && k <= '9') {
+      e.preventDefault();
+      handleNumKey(k);
+      flash(document.querySelector(`[data-key="${k}"]`));
+    } else if (k === 'Backspace') {
+      e.preventDefault();
+      handleBackspace();
+    } else if (k === '*') {
+      e.preventDefault();
+      cycleCaps();
+    } else if (k === '#' || k === ' ') {
+      e.preventDefault();
+      addSpace();
+    } else if (k === 'Enter') {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+
+  // ── Startup sequence ──
+  function runStartup() {
+    const overlay = document.getElementById('startup-overlay');
+    if (!overlay) return;
+    setTimeout(() => {
+      overlay.classList.add('fade-out');
+      setTimeout(() => overlay.remove(), 700);
+    }, 2000);
+  }
+
+  // ── Init ──
+  updateClock();
+  setInterval(updateClock, 15000);
+  render();
+  runStartup();
+</script>
