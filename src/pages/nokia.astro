@@ -84,7 +84,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- LCD footer -->
         <div class="lcd-footer">
           <span class="footer-label">Options</span>
-          <span id="caps-label" class="caps-label">abc</span>
+          <span id="caps-label" class="caps-label">Abc</span>
           <span id="chars-left" class="chars-left">160</span>
         </div>
 
@@ -848,7 +848,12 @@ import Layout from '../layouts/Layout.astro';
     if (!chars) return;
 
     const totalUsed = committed.length + (pendingKey !== null ? 1 : 0);
-    if (totalUsed >= SMS_LIMIT && pendingKey !== key) return;
+    if (totalUsed >= SMS_LIMIT && pendingKey !== key) {
+      // At the limit and pressing a different key: commit the pending char
+      // (so it isn't silently dropped) then stop — no new char can start.
+      commitPending();
+      return;
+    }
 
     vibrate();
 
@@ -1050,6 +1055,10 @@ import Layout from '../layouts/Layout.astro';
   // ── Physical keyboard support ──
   document.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.repeat) return;
+    // Don't intercept keys when focus is on a native interactive element
+    // (e.g. the "back to site" link) — let the browser handle them normally.
+    const tag = (e.target as Element)?.tagName;
+    if (tag === 'A' || tag === 'BUTTON') return;
     const k = e.key;
     if (k >= '0' && k <= '9') {
       e.preventDefault();
@@ -1102,6 +1111,7 @@ import Layout from '../layouts/Layout.astro';
   updateClock();
   setInterval(updateClock, 15000);
   render();
+  renderCaps();
   runStartup();
   scalePhoneToViewport();
 </script>
