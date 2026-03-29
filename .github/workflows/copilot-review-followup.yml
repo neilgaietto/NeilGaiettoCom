@@ -1,0 +1,156 @@
+name: Copilot Review Follow-up
+
+on:
+  pull_request:
+    types: [synchronize, reopened]
+    branches: [main, master]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  follow-up-review:
+    name: Follow-up on Previous Copilot Review Comments
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check previous Copilot review comments
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Known Copilot bot login names used by GitHub's Copilot PR review feature
+            const COPILOT_LOGINS = [
+              'copilot-pull-request-reviewer[bot]',
+              'github-copilot[bot]',
+              'copilot[bot]'
+            ];
+
+            // HTML comment tag used to identify follow-up replies already posted by this workflow,
+            // preventing duplicate comments on repeated synchronize events.
+            const FOLLOWUP_TAG = '<!-- copilot-review-followup -->';
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+            const currentSha = context.payload.pull_request.head.sha;
+
+            core.info(`Checking Copilot review threads for PR #${prNumber} at ${currentSha}`);
+
+            // Fetch all review threads on this PR (up to 100)
+            const threadsQuery = `
+              query GetPRThreads($owner: String!, $repo: String!, $prNumber: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  pullRequest(number: $prNumber) {
+                    reviewThreads(first: 100) {
+                      nodes {
+                        id
+                        isResolved
+                        path
+                        comments(first: 20) {
+                          nodes {
+                            databaseId
+                            author {
+                              login
+                            }
+                            body
+                            originalCommit {
+                              oid
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const result = await github.graphql(threadsQuery, { owner, repo, prNumber });
+            const threads = result.repository.pullRequest.reviewThreads.nodes;
+            core.info(`Found ${threads.length} total review thread(s)`);
+
+            let processed = 0;
+
+            for (const thread of threads) {
+              // Skip already-resolved threads
+              if (thread.isResolved) continue;
+
+              const firstComment = thread.comments.nodes[0];
+              if (!firstComment) continue;
+
+              // Only process threads started by Copilot
+              if (!COPILOT_LOGINS.includes(firstComment.author.login)) continue;
+
+              // Skip if this workflow already posted a follow-up on this thread
+              const alreadyFollowedUp = thread.comments.nodes.some(c =>
+                c.body.includes(FOLLOWUP_TAG)
+              );
+              if (alreadyFollowedUp) {
+                core.info(`Skipping thread ${thread.id} — follow-up already posted`);
+                continue;
+              }
+
+              const originalCommit = firstComment.originalCommit?.oid;
+
+              // Skip if we cannot determine when the comment was made, or if it's on the current commit
+              if (!originalCommit || originalCommit === currentSha) continue;
+
+              // Check whether the file referenced by this thread was modified since the comment was made
+              let fileChanged = false;
+              try {
+                const comparison = await github.rest.repos.compareCommitsWithBasehead({
+                  owner,
+                  repo,
+                  basehead: `${originalCommit}...${currentSha}`
+                });
+                fileChanged = comparison.data.files?.some(f => f.filename === thread.path) ?? false;
+              } catch (err) {
+                core.warning(`Could not compare commits for thread ${thread.id}: ${err.message}`);
+                continue;
+              }
+
+              if (fileChanged) {
+                // The file was touched — attempt to resolve the thread
+                let resolved = false;
+                try {
+                  await github.graphql(`
+                    mutation ResolveThread($threadId: ID!) {
+                      resolveReviewThread(input: {threadId: $threadId}) {
+                        thread { id isResolved }
+                      }
+                    }
+                  `, { threadId: thread.id });
+                  resolved = true;
+                  core.info(`Resolved thread ${thread.id} on ${thread.path}`);
+                } catch (err) {
+                  core.warning(`Could not resolve thread ${thread.id}: ${err.message}`);
+                }
+
+                const resolvedNote = resolved
+                  ? 'This thread has been marked as **resolved**. Please verify that the original issue has been fully addressed.'
+                  : 'Please verify whether the issue has been addressed and resolve this thread if so.';
+                const body = `${FOLLOWUP_TAG}\n> **Follow-up Review**: The code at this location was modified in a subsequent commit. ${resolvedNote}`;
+
+                await github.rest.pulls.createReplyForReviewComment({
+                  owner,
+                  repo,
+                  pull_number: prNumber,
+                  comment_id: firstComment.databaseId,
+                  body
+                });
+              } else {
+                // The file was not changed — the issue is likely still present
+                await github.rest.pulls.createReplyForReviewComment({
+                  owner,
+                  repo,
+                  pull_number: prNumber,
+                  comment_id: firstComment.databaseId,
+                  body: `${FOLLOWUP_TAG}\n> **Follow-up Review**: The code at this location does not appear to have changed since this comment was made. This issue may still be present in the latest commit.`
+                });
+              }
+
+              processed++;
+            }
+
+            core.info(`Processed ${processed} Copilot review thread(s)`);
