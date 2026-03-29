@@ -509,7 +509,7 @@ function waveContrib(
       [tr, tg, tb] = hslToRgb(wave.hue, 100, 58);
     } else {
       // rainbow: hue shifts radially along each expanding ring
-      const hue = ((wave.hue + r * 360 / settings.wavelength) % 360 + 360) % 360;
+      const hue = ((wave.hue + Math.hypot(dx, dy) * 360 / settings.wavelength) % 360 + 360) % 360;
       [tr, tg, tb] = hslToRgb(hue, 100, 58);
     }
 
