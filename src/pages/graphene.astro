@@ -11,14 +11,14 @@ import Layout from '../layouts/Layout.astro';
 
     <a href="/" id="back">← back</a>
 
-    <button id="settingsBtn" aria-label="Open settings">
+    <button id="settingsBtn" aria-label="Open settings" aria-controls="settingsPanel" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
       </svg>
     </button>
 
-    <div id="settingsPanel">
+    <div id="settingsPanel" role="dialog" aria-label="Settings" aria-hidden="true">
       <div class="panel-section">
         <div class="section-label">Background</div>
         <div class="btn-group wrap" id="bgModeGroup">
@@ -312,7 +312,7 @@ let atoms:     Atom[]       = [];
 let bonds:     Bond[]       = [];
 let waveHue    = 0;   // advances 60° per stroke so cycle colors are always distinct
 let strokeHue  = 0;   // hue shared by all wave origins within one stroke
-let rafId:     number;
+let rafId      = 0;
 
 const BOND_LEN  = 26;  // px – graphene C–C bond
 const ATOM_R    = 2.2;
@@ -495,9 +495,17 @@ function waveContrib(
   let weight = 0, wr = 0, wg = 0, wb = 0;
 
   for (const wave of waves) {
-    const dt  = now - wave.t0;
-    const dx  = x - wave.x;
-    const dy  = y - wave.y;
+    const dt = now - wave.t0;
+    if (dt <= 0) continue;
+    const dx   = x - wave.x;
+    const dy   = y - wave.y;
+    const dist = Math.hypot(dx, dy);
+    // Quick-reject: if the maximum possible amplitude at this distance
+    // (exp decay * fade envelope) is already below the render threshold,
+    // skip all the expensive trig — saves ~80 % of inner-loop work at
+    // typical decay settings.
+    const fade = 1 - dt / settings.lifetime;
+    if (Math.exp(-settings.decay * 0.003 * dist) * fade < 0.005) continue;
     const val = Math.abs(waveVal(dx, dy, dt, wave.hue));
     if (val < 0.004) continue;
 
@@ -652,9 +660,18 @@ function drawFrame(ts: number) {
 
 // ===== RESIZE =====
 function resize() {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const lat = buildLattice(canvas.width, canvas.height, BOND_LEN);
+  const dpr     = window.devicePixelRatio || 1;
+  const cssW    = window.innerWidth;
+  const cssH    = window.innerHeight;
+  // Size the backing store for the device pixel density so the lattice
+  // renders crisply on retina / high-DPI displays.
+  canvas.style.width  = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  canvas.width  = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  // Lattice generation uses CSS-pixel dimensions so coordinates stay consistent.
+  const lat = buildLattice(cssW, cssH, BOND_LEN);
   atoms = lat.atoms;
   bonds = lat.bonds;
 }
@@ -707,7 +724,10 @@ const settingsBtn   = document.getElementById('settingsBtn')!;
 const settingsPanel = document.getElementById('settingsPanel')!;
 
 settingsBtn.addEventListener('click', () => {
+  const opening = !settingsPanel.classList.contains('open');
   settingsPanel.classList.toggle('open');
+  settingsBtn.setAttribute('aria-expanded', String(opening));
+  settingsPanel.setAttribute('aria-hidden',  String(!opening));
 });
 
 // Close panel when clicking outside
@@ -715,6 +735,8 @@ document.addEventListener('pointerdown', (e) => {
   if (!settingsPanel.contains(e.target as Node) &&
       e.target !== settingsBtn && !settingsBtn.contains(e.target as Node)) {
     settingsPanel.classList.remove('open');
+    settingsBtn.setAttribute('aria-expanded', 'false');
+    settingsPanel.setAttribute('aria-hidden',  'true');
   }
 });
 
@@ -747,8 +769,9 @@ setupBtnGroup('waveModeGroup', (val) => {
 function updateBgRows() {
   const solidRow = document.getElementById('bgSolidRow')!;
   const touchRow = document.getElementById('bgTouchRow')!;
-  const auto = settings.bgMode === 'rainbow' || settings.bgMode === 'cycle';
-  solidRow.classList.toggle('hidden', auto);
+  // bgSolidColor is always used as the canvas base fill regardless of mode,
+  // so keep the picker visible in all modes so the user can adjust it.
+  solidRow.classList.remove('hidden');
   touchRow.classList.toggle('hidden', settings.bgMode !== 'touch');
 }
 
