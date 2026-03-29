@@ -307,16 +307,16 @@ interface Settings {
 const canvas  = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx     = canvas.getContext('2d')!;
 
-let waves:   WaveOrigin[] = [];
-let atoms:   Atom[]       = [];
-let bonds:   Bond[]       = [];
-let waveHue  = 0;          // cycles for each new wave so colors vary
-let rafId:   number;
+let waves:     WaveOrigin[] = [];
+let atoms:     Atom[]       = [];
+let bonds:     Bond[]       = [];
+let waveHue    = 0;   // advances 60° per stroke so cycle colors are always distinct
+let strokeHue  = 0;   // hue shared by all wave origins within one stroke
+let rafId:     number;
 
-const BOND_LEN   = 26;  // px – graphene C–C bond
-const ATOM_R     = 2.2;
-const BOND_W     = 1.4;
-const MAX_WAVES  = 120; // discard oldest when exceeded
+const BOND_LEN  = 26;  // px – graphene C–C bond
+const ATOM_R    = 2.2;
+const MAX_WAVES = 120; // discard oldest when exceeded
 
 const settings: Settings = {
   bgMode:            'solid',
@@ -577,7 +577,6 @@ function drawFrame(ts: number) {
   const dimB    = Math.round(baseRgb[2] * DIM);
   const dimStr  = `rgb(${dimR},${dimG},${dimB})`;
 
-  ctx.globalCompositeOperation = 'source-over';
   ctx.strokeStyle = dimStr;
   ctx.lineWidth   = settings.bondWidth;
   for (const bond of bonds) {
@@ -670,8 +669,9 @@ function spawnWave(x: number, y: number) {
     if (d < MIN_WAVE_GAP) return;
   }
   if (waves.length >= MAX_WAVES) waves.shift();
-  waves.push({ x, y, t0: performance.now() / 1000, hue: waveHue });
-  waveHue = (waveHue + 18) % 360;
+  // All wave origins within one stroke share strokeHue so cycle mode shows
+  // one solid colour per gesture rather than drifting mid-drag.
+  waves.push({ x, y, t0: performance.now() / 1000, hue: strokeHue });
   lastWavePos = { x, y };
 }
 
@@ -681,6 +681,10 @@ function clearLastPos() { lastWavePos = null; }
 canvas.addEventListener('pointerdown', (e) => {
   if (isPanelTarget(e)) return;
   e.preventDefault();
+  // Advance 60° per new stroke — 6 maximally-spaced hues before repeating,
+  // so consecutive taps always land on clearly different colours.
+  strokeHue = waveHue;
+  waveHue   = (waveHue + 60) % 360;
   clearLastPos();
   spawnWave(e.clientX, e.clientY);
 });
@@ -695,8 +699,7 @@ canvas.addEventListener('pointerleave', clearLastPos);
 canvas.style.touchAction = 'none';
 
 function isPanelTarget(e: PointerEvent) {
-  const panel = document.getElementById('settingsPanel')!;
-  return panel.contains(e.target as Node);
+  return settingsPanel.contains(e.target as Node);
 }
 
 // ===== SETTINGS UI =====
@@ -744,8 +747,8 @@ setupBtnGroup('waveModeGroup', (val) => {
 function updateBgRows() {
   const solidRow = document.getElementById('bgSolidRow')!;
   const touchRow = document.getElementById('bgTouchRow')!;
-  const autoModes = ['rainbow', 'cycle'] as const;
-  solidRow.classList.toggle('hidden', autoModes.includes(settings.bgMode as any));
+  const auto = settings.bgMode === 'rainbow' || settings.bgMode === 'cycle';
+  solidRow.classList.toggle('hidden', auto);
   touchRow.classList.toggle('hidden', settings.bgMode !== 'touch');
 }
 
