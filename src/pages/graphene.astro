@@ -86,6 +86,10 @@ import Layout from '../layouts/Layout.astro';
           <label>Line Width <span id="bondWidthDisplay">1.4</span></label>
           <input type="range" id="bondWidthSlider" min="0.5" max="6" value="1.4" step="0.1">
         </div>
+        <div class="slider-row">
+          <label>Wave Variation <span id="variationDisplay">0</span></label>
+          <input type="range" id="variationSlider" min="0" max="10" value="0">
+        </div>
       </div>
     </div>
   </div>
@@ -296,6 +300,7 @@ interface Settings {
   decay:             number;
   lifetime:          number;
   bondWidth:         number;
+  variation:         number; // 0–10: wave-front irregularity
 }
 
 // ===== STATE =====
@@ -326,6 +331,7 @@ const settings: Settings = {
   decay:             3,
   lifetime:          3,
   bondWidth:         1.4,
+  variation:         0,
 };
 
 // ===== LATTICE GENERATION =====
@@ -410,18 +416,39 @@ function buildLattice(w: number, h: number, d: number) {
 }
 
 // ===== WAVE MATH =====
-function waveVal(r: number, dt: number): number {
+
+// Perturb the effective radius using angular harmonics so wave fronts are
+// organic blobs rather than perfect circles. wavePhase (0–360) seeds each
+// wave with a unique shape. variation is 0–10 from the slider.
+function perturbR(rawR: number, angle: number, wavePhase: number): number {
+  if (settings.variation === 0 || rawR < 1) return rawR;
+  const v = settings.variation / 10; // normalise to 0–1
+  const p = wavePhase * 0.017453; // degrees → radians (unique per wave)
+  const noise =
+    Math.sin(angle * 2 + p * 1.0 + 0.70) * 0.50 +
+    Math.sin(angle * 3 + p * 1.7 + 1.90) * 0.28 +
+    Math.sin(angle * 5 + p * 2.3 + 3.14) * 0.14 +
+    Math.sin(angle * 7 + p * 3.1 + 0.42) * 0.08;
+  // noise ≈ [-1, 1]; scale perturbation so high variation gives ±40% radius shift
+  return Math.max(0, rawR * (1 + noise * v * 0.4));
+}
+
+function waveVal(dx: number, dy: number, dt: number, wavePhase: number): number {
   if (dt <= 0 || dt >= settings.lifetime) return 0;
+
+  const rawR = Math.hypot(dx, dy);
+  const r    = settings.variation > 0
+    ? perturbR(rawR, Math.atan2(dy, dx), wavePhase)
+    : rawR;
 
   const fade = 1 - dt / settings.lifetime;
   const { speed, wavelength, decay } = settings;
-  const decayFactor = decay * 0.0012; // normalize to reasonable per-px decay
+  const decayFactor = decay * 0.0012;
 
   switch (settings.waveMode) {
     case 'ripple': {
-      const k     = (2 * Math.PI) / wavelength;
-      const omega = k * speed;
-      return Math.sin(k * r - omega * dt) * Math.exp(-decayFactor * r) * fade;
+      const k = (2 * Math.PI) / wavelength;
+      return Math.sin(k * r - k * speed * dt) * Math.exp(-decayFactor * r) * fade;
     }
     case 'pulse': {
       const r0    = speed * dt;
@@ -469,8 +496,9 @@ function waveContrib(
 
   for (const wave of waves) {
     const dt  = now - wave.t0;
-    const r   = Math.hypot(x - wave.x, y - wave.y);
-    const val = Math.abs(waveVal(r, dt));
+    const dx  = x - wave.x;
+    const dy  = y - wave.y;
+    const val = Math.abs(waveVal(dx, dy, dt, wave.hue));
     if (val < 0.004) continue;
 
     let tr: number, tg: number, tb: number;
@@ -753,6 +781,7 @@ bindSlider('wavelengthSlider', 'wavelengthDisplay', v => { settings.wavelength =
 bindSlider('decaySlider',      'decayDisplay',      v => { settings.decay      = v; });
 bindSlider('lifetimeSlider',   'lifetimeDisplay',   v => { settings.lifetime   = v; });
 bindSlider('bondWidthSlider',  'bondWidthDisplay',  v => { settings.bondWidth  = v; });
+bindSlider('variationSlider',  'variationDisplay',  v => { settings.variation  = v; });
 
 // ===== INIT =====
 window.addEventListener('resize', () => {
