@@ -335,10 +335,12 @@ function buildLattice(w: number, h: number, d: number) {
   const sq3    = Math.sqrt(3);
   const margin = 4 * d;
 
-  const nMin = -Math.ceil(margin / (d * sq3)) - 1;
-  const nMax =  Math.ceil((w + margin) / (d * sq3)) + 1;
   const mMin = -Math.ceil(margin / (d * 1.5)) - 1;
   const mMax =  Math.ceil((h + margin) / (d * 1.5)) + 1;
+  // x = d*(n*sq3 + m*sq3/2), so n range must account for the diagonal skew from m.
+  // Bottom-left needs n ≈ -mMax/2; top-right needs n ≈ (w+margin)/(d*sq3) - mMin/2.
+  const nMin = -Math.ceil(margin / (d * sq3)) - Math.ceil(mMax / 2) - 1;
+  const nMax =  Math.ceil((w + margin) / (d * sq3)) + Math.ceil(Math.abs(mMin) / 2) + 1;
 
   const atomMap = new Map<string, number>();
   const newAtoms: Atom[] = [];
