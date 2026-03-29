@@ -1,0 +1,821 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Graphene — NeilGaietto.com"
+  description="Interactive graphene lattice visualization."
+>
+  <div id="root">
+    <canvas id="canvas"></canvas>
+
+    <a href="/demos" id="back">← back</a>
+
+    <button id="settingsBtn" aria-label="Open settings" aria-controls="settingsPanel" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+
+    <div id="settingsPanel" role="dialog" aria-label="Settings" aria-hidden="true">
+      <div class="panel-section">
+        <div class="section-label">Background</div>
+        <div class="btn-group wrap" id="bgModeGroup">
+          <button class="mode-btn active" data-value="solid">Solid</button>
+          <button class="mode-btn" data-value="touch">Touch</button>
+          <button class="mode-btn" data-value="cycle">Cycle</button>
+          <button class="mode-btn" data-value="rainbow">Rainbow</button>
+        </div>
+        <div class="color-row" id="bgSolidRow">
+          <label for="bgSolidColor">Color</label>
+          <input type="color" id="bgSolidColor" value="#000000">
+        </div>
+        <div class="color-row hidden" id="bgTouchRow">
+          <label for="bgTouchColor">Wave color</label>
+          <input type="color" id="bgTouchColor" value="#0d0d2e">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">Lattice</div>
+        <div class="btn-group wrap" id="latticeModeGroup">
+          <button class="mode-btn" data-value="solid">Solid</button>
+          <button class="mode-btn active" data-value="touch">Touch</button>
+          <button class="mode-btn" data-value="cycle">Cycle</button>
+          <button class="mode-btn" data-value="rainbow">Rainbow</button>
+        </div>
+        <div class="color-row hidden" id="latticeSolidRow">
+          <label for="latticeSolidColor">Color</label>
+          <input type="color" id="latticeSolidColor" value="#ffffff">
+        </div>
+        <div class="color-row" id="latticeTouchRow">
+          <label for="latticeTouchColor">Wave color</label>
+          <input type="color" id="latticeTouchColor" value="#00ff88">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">Wave Effect</div>
+        <div class="btn-group wrap" id="waveModeGroup">
+          <button class="mode-btn active" data-value="ripple">Ripple</button>
+          <button class="mode-btn" data-value="pulse">Pulse</button>
+          <button class="mode-btn" data-value="expand">Expand</button>
+          <button class="mode-btn" data-value="burst">Burst</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="slider-row">
+          <label>Speed <span id="speedDisplay">150</span></label>
+          <input type="range" id="speedSlider" min="50" max="600" value="150" step="10">
+        </div>
+        <div class="slider-row">
+          <label>Wavelength <span id="wavelengthDisplay">80</span></label>
+          <input type="range" id="wavelengthSlider" min="20" max="200" value="80" step="5">
+        </div>
+        <div class="slider-row">
+          <label>Decay <span id="decayDisplay">5</span></label>
+          <input type="range" id="decaySlider" min="1" max="10" value="5">
+        </div>
+        <div class="slider-row">
+          <label>Lifetime <span id="lifetimeDisplay">3</span>s</label>
+          <input type="range" id="lifetimeSlider" min="1" max="8" value="3">
+        </div>
+        <div class="slider-row">
+          <label>Line Width <span id="bondWidthDisplay">1.4</span></label>
+          <input type="range" id="bondWidthSlider" min="0.5" max="6" value="1.4" step="0.1">
+        </div>
+        <div class="slider-row">
+          <label>Wave Variation <span id="variationDisplay">0</span></label>
+          <input type="range" id="variationSlider" min="0" max="10" value="0">
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style is:global>
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background-image: none !important;
+    background-color: #000 !important;
+    display: block !important;
+    min-height: unset !important;
+  }
+</style>
+
+<style>
+  #root {
+    position: fixed;
+    inset: 0;
+    user-select: none;
+  }
+
+  #canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
+
+  /* ---- back link ---- */
+  #back {
+    position: absolute;
+    bottom: 18px;
+    left: 20px;
+    color: rgba(255,255,255,0.35);
+    font-size: 13px;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color 0.2s;
+    z-index: 10;
+  }
+  #back:hover { color: rgba(255,255,255,0.8); }
+
+  /* ---- settings button ---- */
+  #settingsBtn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(8px);
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  #settingsBtn:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.4);
+  }
+  #settingsBtn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* ---- settings panel ---- */
+  #settingsPanel {
+    position: absolute;
+    top: 68px;
+    right: 16px;
+    width: 230px;
+    background: rgba(10,10,14,0.88);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 14px;
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+  }
+  #settingsPanel.open { display: flex; }
+
+  .panel-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 4px;
+  }
+  .btn-group.wrap { flex-wrap: wrap; }
+
+  .mode-btn {
+    flex: 1;
+    padding: 5px 4px;
+    font-size: 11px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .mode-btn:hover {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.8);
+  }
+  .mode-btn.active {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.4);
+    color: #fff;
+  }
+
+  .color-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .color-row label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    flex: 1;
+  }
+  .color-row input[type="color"] {
+    width: 32px;
+    height: 22px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
+    padding: 1px;
+  }
+  .color-row.hidden { display: none; }
+
+  .slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .slider-row label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    display: flex;
+    justify-content: space-between;
+  }
+  .slider-row label span {
+    color: rgba(255,255,255,0.75);
+    min-width: 28px;
+    text-align: right;
+  }
+  .slider-row input[type="range"] {
+    width: 100%;
+    accent-color: rgba(255,255,255,0.7);
+    cursor: pointer;
+  }
+</style>
+
+<script>
+// ===== TYPES =====
+interface WaveOrigin {
+  x: number;
+  y: number;
+  t0: number;   // creation time in seconds
+  hue: number;  // 0–360, for rainbow mode
+}
+
+interface Atom {
+  x: number;
+  y: number;
+}
+
+interface Bond {
+  ax: number; ay: number;
+  bx: number; by: number;
+  mx: number; my: number; // midpoint
+}
+
+interface Settings {
+  bgMode:            'solid' | 'touch' | 'cycle' | 'rainbow';
+  bgSolidColor:      string;
+  bgTouchColor:      string;
+  latticeMode:       'solid' | 'touch' | 'cycle' | 'rainbow';
+  latticeSolidColor: string;
+  latticeTouchColor: string;
+  waveMode:          'ripple' | 'pulse' | 'expand' | 'burst';
+  speed:             number;
+  wavelength:        number;
+  decay:             number;
+  lifetime:          number;
+  bondWidth:         number;
+  variation:         number; // 0–10: wave-front irregularity
+}
+
+// ===== STATE =====
+const canvas  = document.getElementById('canvas') as HTMLCanvasElement;
+const ctx     = canvas.getContext('2d')!;
+
+let waves:     WaveOrigin[] = [];
+let atoms:     Atom[]       = [];
+let bonds:     Bond[]       = [];
+let waveHue    = 0;   // advances 60° per stroke so cycle colors are always distinct
+let strokeHue  = 0;   // hue shared by all wave origins within one stroke
+let rafId      = 0;
+
+const BOND_LEN  = 26;  // px – graphene C–C bond
+const ATOM_R    = 2.2;
+const MAX_WAVES = 120; // discard oldest when exceeded
+
+const settings: Settings = {
+  bgMode:            'solid',
+  bgSolidColor:      '#000000',
+  bgTouchColor:      '#0d0d2e',
+  latticeMode:       'touch',
+  latticeSolidColor: '#ffffff',
+  latticeTouchColor: '#00ff88',
+  waveMode:          'ripple',
+  speed:             150,
+  wavelength:        80,
+  decay:             5,
+  lifetime:          3,
+  bondWidth:         1.4,
+  variation:         0,
+};
+
+// ===== LATTICE GENERATION =====
+//
+// Graphene unit cell (zigzag orientation):
+//   Primitive vectors: a1 = d(sq3, 0),  a2 = d(sq3/2, 3/2)
+//   Basis: atom A at (0, 0),  atom B at (0, d)
+//
+//   A(n,m) = d · (n·sq3 + m·sq3/2,  m·3/2)
+//   B(n,m) = A(n,m) + (0, d)
+//
+// Each A bonds to:  B(n,m),  B(n,m−1),  B(n+1,m−1)
+
+function buildLattice(w: number, h: number, d: number) {
+  const sq3    = Math.sqrt(3);
+  const margin = 4 * d;
+
+  const mMin = -Math.ceil(margin / (d * 1.5)) - 1;
+  const mMax =  Math.ceil((h + margin) / (d * 1.5)) + 1;
+  // x = d*(n*sq3 + m*sq3/2), so n range must account for the diagonal skew from m.
+  // Bottom-left needs n ≈ -mMax/2; top-right needs n ≈ (w+margin)/(d*sq3) - mMin/2.
+  const nMin = -Math.ceil(margin / (d * sq3)) - Math.ceil(mMax / 2) - 1;
+  const nMax =  Math.ceil((w + margin) / (d * sq3)) + Math.ceil(Math.abs(mMin) / 2) + 1;
+
+  const atomMap = new Map<string, number>();
+  const newAtoms: Atom[] = [];
+  const newBonds: Bond[] = [];
+
+  function key(x: number, y: number) {
+    return `${Math.round(x * 4)},${Math.round(y * 4)}`;
+  }
+
+  function addAtom(x: number, y: number): number {
+    const k = key(x, y);
+    if (atomMap.has(k)) return atomMap.get(k)!;
+    const idx = newAtoms.length;
+    newAtoms.push({ x, y });
+    atomMap.set(k, idx);
+    return idx;
+  }
+
+  function addBond(ax: number, ay: number, bx: number, by: number) {
+    addAtom(ax, ay);
+    addAtom(bx, by);
+    newBonds.push({ ax, ay, bx, by, mx: (ax + bx) / 2, my: (ay + by) / 2 });
+  }
+
+  for (let n = nMin; n <= nMax; n++) {
+    for (let m = mMin; m <= mMax; m++) {
+      // Atom A position
+      const ax = d * (n * sq3 + m * sq3 / 2);
+      const ay = d * (m * 1.5);
+
+      // Bond 1: A(n,m) → B(n,m)  [straight up]
+      addBond(ax, ay, ax, ay + d);
+
+      // Bond 2: A(n,m) → B(n, m−1)  [upper-left]
+      const b2x = d * (n * sq3 + (m - 1) * sq3 / 2);
+      const b2y = d * ((m - 1) * 1.5) + d;
+      addBond(ax, ay, b2x, b2y);
+
+      // Bond 3: A(n,m) → B(n+1, m−1)  [upper-right]
+      const b3x = d * ((n + 1) * sq3 + (m - 1) * sq3 / 2);
+      const b3y = b2y; // same row as b2
+      addBond(ax, ay, b3x, b3y);
+    }
+  }
+
+  // Filter to on-screen only (with margin)
+  const visAtoms = newAtoms.filter(a =>
+    a.x >= -margin && a.x <= w + margin &&
+    a.y >= -margin && a.y <= h + margin
+  );
+  const visBonds = newBonds.filter(b => {
+    const minX = Math.min(b.ax, b.bx), maxX = Math.max(b.ax, b.bx);
+    const minY = Math.min(b.ay, b.by), maxY = Math.max(b.ay, b.by);
+    return maxX >= -margin && minX <= w + margin &&
+           maxY >= -margin && minY <= h + margin;
+  });
+
+  return { atoms: visAtoms, bonds: visBonds };
+}
+
+// ===== WAVE MATH =====
+
+// Perturb the effective radius using angular harmonics so wave fronts are
+// organic blobs rather than perfect circles. wavePhase (0–360) seeds each
+// wave with a unique shape. variation is 0–10 from the slider.
+function perturbR(rawR: number, angle: number, wavePhase: number): number {
+  if (settings.variation === 0 || rawR < 1) return rawR;
+  const v = settings.variation / 10; // normalise to 0–1
+  const p = wavePhase * 0.017453; // degrees → radians (unique per wave)
+  const noise =
+    Math.sin(angle * 2 + p * 1.0 + 0.70) * 0.50 +
+    Math.sin(angle * 3 + p * 1.7 + 1.90) * 0.28 +
+    Math.sin(angle * 5 + p * 2.3 + 3.14) * 0.14 +
+    Math.sin(angle * 7 + p * 3.1 + 0.42) * 0.08;
+  // noise ≈ [-1, 1]; scale perturbation so high variation gives ±40% radius shift
+  return Math.max(0, rawR * (1 + noise * v * 0.4));
+}
+
+function waveVal(dx: number, dy: number, dt: number, wavePhase: number): number {
+  if (dt <= 0 || dt >= settings.lifetime) return 0;
+
+  const rawR = Math.hypot(dx, dy);
+  const r    = settings.variation > 0
+    ? perturbR(rawR, Math.atan2(dy, dx), wavePhase)
+    : rawR;
+
+  const fade = 1 - dt / settings.lifetime;
+  const { speed, wavelength, decay } = settings;
+  const decayFactor = decay * 0.003; // tuned so decay=5 (default) dies out ~260 px
+
+  switch (settings.waveMode) {
+    case 'ripple': {
+      const k = (2 * Math.PI) / wavelength;
+      return Math.sin(k * r - k * speed * dt) * Math.exp(-decayFactor * r) * fade;
+    }
+    case 'pulse': {
+      const r0    = speed * dt;
+      const sigma = wavelength * 0.45;
+      return Math.exp(-((r - r0) ** 2) / (2 * sigma * sigma)) * fade;
+    }
+    case 'expand': {
+      const r0 = Math.max(1, speed * dt);
+      if (r > r0) return 0;
+      return (1 - r / r0) * fade;
+    }
+    case 'burst': {
+      const k = (2 * Math.PI) / wavelength;
+      return Math.sin(k * r) * Math.exp(-decayFactor * r) * fade;
+    }
+  }
+}
+
+// ===== COLOR UTILITIES =====
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace('#', '');
+  return [
+    parseInt(h.slice(0, 2), 16),
+    parseInt(h.slice(2, 4), 16),
+    parseInt(h.slice(4, 6), 16),
+  ];
+}
+
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  s /= 100; l /= 100;
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
+}
+
+// Returns the accumulated wave color and total weight at a canvas point.
+// 'mode' is the lattice/bg mode so callers can share this logic.
+function waveContrib(
+  x: number, y: number, now: number,
+  mode: Settings['latticeMode'] | Settings['bgMode'],
+  touchColor: string
+): { weight: number; r: number; g: number; b: number } {
+  let weight = 0, wr = 0, wg = 0, wb = 0;
+
+  for (const wave of waves) {
+    const dt = now - wave.t0;
+    if (dt <= 0) continue;
+    const dx   = x - wave.x;
+    const dy   = y - wave.y;
+    const dist = Math.hypot(dx, dy);
+    // Quick-reject: if the maximum possible amplitude at this distance
+    // (exp decay * fade envelope) is already below the render threshold,
+    // skip all the expensive trig — saves ~80 % of inner-loop work at
+    // typical decay settings.
+    const fade = 1 - dt / settings.lifetime;
+    if (Math.exp(-settings.decay * 0.003 * dist) * fade < 0.005) continue;
+    const val = Math.abs(waveVal(dx, dy, dt, wave.hue));
+    if (val < 0.004) continue;
+
+    let tr: number, tg: number, tb: number;
+    if (mode === 'touch') {
+      [tr, tg, tb] = hexToRgb(touchColor);
+    } else if (mode === 'cycle') {
+      // Each wave carries its own hue — whole ring is one vivid color
+      [tr, tg, tb] = hslToRgb(wave.hue, 100, 58);
+    } else {
+      // rainbow: hue shifts radially along each expanding ring
+      const hue = ((wave.hue + Math.hypot(dx, dy) * 360 / settings.wavelength) % 360 + 360) % 360;
+      [tr, tg, tb] = hslToRgb(hue, 100, 58);
+    }
+
+    weight += val;
+    wr += val * tr;
+    wg += val * tg;
+    wb += val * tb;
+  }
+
+  if (weight === 0) return { weight: 0, r: 0, g: 0, b: 0 };
+  return { weight, r: wr / weight, g: wg / weight, b: wb / weight };
+}
+
+// ===== RENDERING =====
+function drawFrame(ts: number) {
+  const now = ts / 1000;
+  waves = waves.filter(w => now - w.t0 < settings.lifetime);
+
+  const W = canvas.width, H = canvas.height;
+
+  // ── Background ────────────────────────────────────────────────────────────
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = settings.bgSolidColor;
+  ctx.fillRect(0, 0, W, H);
+
+  if (settings.bgMode !== 'solid') {
+    for (const wave of waves) {
+      const dt = now - wave.t0;
+      if (dt <= 0) continue;
+      const fade  = Math.max(0, 1 - dt / settings.lifetime);
+      const r0    = settings.speed * dt;
+      const outer = r0 + settings.wavelength * 2;
+
+      let cr: number, cg: number, cb: number;
+      if (settings.bgMode === 'touch') {
+        [cr, cg, cb] = hexToRgb(settings.bgTouchColor);
+      } else if (settings.bgMode === 'cycle') {
+        [cr, cg, cb] = hslToRgb(wave.hue, 100, 45);
+      } else {
+        const hue = ((wave.hue - dt * 30) % 360 + 360) % 360;
+        [cr, cg, cb] = hslToRgb(hue, 100, 40);
+      }
+
+      const inner = Math.max(0, r0 - settings.wavelength);
+      const grad  = ctx.createRadialGradient(wave.x, wave.y, inner, wave.x, wave.y, outer);
+      const peak  = (0.45 * fade).toFixed(3);
+      grad.addColorStop(0,    `rgba(${cr},${cg},${cb},0)`);
+      grad.addColorStop(0.4,  `rgba(${cr},${cg},${cb},${peak})`);
+      grad.addColorStop(1,    `rgba(${cr},${cg},${cb},0)`);
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(wave.x, wave.y, outer, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ── Lattice – pass 1: dim base lines ─────────────────────────────────────
+  // In reactive modes the unlit lattice is very dim so wave crests pop.
+  const lMode   = settings.latticeMode;
+  const baseRgb = hexToRgb(settings.latticeSolidColor);
+  const DIM     = lMode === 'solid' ? 1.0 : 0.14; // reactive → 14 % brightness
+  const dimR    = Math.round(baseRgb[0] * DIM);
+  const dimG    = Math.round(baseRgb[1] * DIM);
+  const dimB    = Math.round(baseRgb[2] * DIM);
+  const dimStr  = `rgb(${dimR},${dimG},${dimB})`;
+
+  ctx.strokeStyle = dimStr;
+  ctx.lineWidth   = settings.bondWidth;
+  for (const bond of bonds) {
+    ctx.beginPath();
+    ctx.moveTo(bond.ax, bond.ay);
+    ctx.lineTo(bond.bx, bond.by);
+    ctx.stroke();
+  }
+  ctx.fillStyle = dimStr;
+  for (const atom of atoms) {
+    ctx.beginPath();
+    ctx.arc(atom.x, atom.y, ATOM_R, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (lMode === 'solid' || waves.length === 0) {
+    rafId = requestAnimationFrame(drawFrame);
+    return;
+  }
+
+  // ── Lattice – pass 2: wave glow via screen blend ──────────────────────────
+  // Screen blend: result = 1-(1-src)(1-dst). On a dark base this is
+  // near-additive, giving saturated neon colours without washing them out.
+  ctx.globalCompositeOperation = 'screen';
+
+  for (const bond of bonds) {
+    const c = waveContrib(bond.mx, bond.my, now, lMode, settings.latticeTouchColor);
+    if (c.weight < 0.02) continue;
+
+    const inf  = Math.min(1, c.weight * 1.6);
+    const R = Math.round(c.r), G = Math.round(c.g), B = Math.round(c.b);
+
+    // Wide soft bloom halo
+    ctx.strokeStyle = `rgba(${R},${G},${B},${(inf * 0.4).toFixed(3)})`;
+    ctx.lineWidth   = settings.bondWidth * 4;
+    ctx.beginPath();
+    ctx.moveTo(bond.ax, bond.ay);
+    ctx.lineTo(bond.bx, bond.by);
+    ctx.stroke();
+
+    // Bright core
+    ctx.strokeStyle = `rgba(${R},${G},${B},${Math.min(1, inf * 1.3).toFixed(3)})`;
+    ctx.lineWidth   = settings.bondWidth;
+    ctx.beginPath();
+    ctx.moveTo(bond.ax, bond.ay);
+    ctx.lineTo(bond.bx, bond.by);
+    ctx.stroke();
+  }
+
+  for (const atom of atoms) {
+    const c = waveContrib(atom.x, atom.y, now, lMode, settings.latticeTouchColor);
+    if (c.weight < 0.02) continue;
+
+    const inf = Math.min(1, c.weight * 1.6);
+    const R = Math.round(c.r), G = Math.round(c.g), B = Math.round(c.b);
+
+    // Bloom halo
+    ctx.fillStyle = `rgba(${R},${G},${B},${(inf * 0.45).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(atom.x, atom.y, ATOM_R * 3.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bright core
+    ctx.fillStyle = `rgba(${R},${G},${B},${Math.min(1, inf * 1.5).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(atom.x, atom.y, ATOM_R, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.globalCompositeOperation = 'source-over';
+  rafId = requestAnimationFrame(drawFrame);
+}
+
+// ===== RESIZE =====
+function resize() {
+  const dpr     = window.devicePixelRatio || 1;
+  const cssW    = window.innerWidth;
+  const cssH    = window.innerHeight;
+  // Size the backing store for the device pixel density so the lattice
+  // renders crisply on retina / high-DPI displays.
+  canvas.style.width  = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  canvas.width  = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  // Lattice generation uses CSS-pixel dimensions so coordinates stay consistent.
+  const lat = buildLattice(cssW, cssH, BOND_LEN);
+  atoms = lat.atoms;
+  bonds = lat.bonds;
+}
+
+// ===== INPUT HANDLING =====
+let lastWavePos: { x: number; y: number } | null = null;
+const MIN_WAVE_GAP = 12; // px – min distance between successive wave origins
+
+function spawnWave(x: number, y: number) {
+  if (lastWavePos) {
+    const d = Math.hypot(x - lastWavePos.x, y - lastWavePos.y);
+    if (d < MIN_WAVE_GAP) return;
+  }
+  if (waves.length >= MAX_WAVES) waves.shift();
+  // All wave origins within one stroke share strokeHue so cycle mode shows
+  // one solid colour per gesture rather than drifting mid-drag.
+  waves.push({ x, y, t0: performance.now() / 1000, hue: strokeHue });
+  lastWavePos = { x, y };
+}
+
+function clearLastPos() { lastWavePos = null; }
+
+// Pointer (mouse + touch unified)
+canvas.addEventListener('pointerdown', (e) => {
+  if (isPanelTarget(e)) return;
+  e.preventDefault();
+  // Advance 60° per new stroke — 6 maximally-spaced hues before repeating,
+  // so consecutive taps always land on clearly different colours.
+  strokeHue = waveHue;
+  waveHue   = (waveHue + 60) % 360;
+  clearLastPos();
+  spawnWave(e.clientX, e.clientY);
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (e.buttons === 0) return;
+  if (isPanelTarget(e)) return;
+  e.preventDefault();
+  spawnWave(e.clientX, e.clientY);
+});
+canvas.addEventListener('pointerup',    clearLastPos);
+canvas.addEventListener('pointerleave', clearLastPos);
+canvas.style.touchAction = 'none';
+
+function isPanelTarget(e: PointerEvent) {
+  return settingsPanel.contains(e.target as Node);
+}
+
+// ===== SETTINGS UI =====
+const settingsBtn   = document.getElementById('settingsBtn')!;
+const settingsPanel = document.getElementById('settingsPanel')!;
+
+settingsBtn.addEventListener('click', () => {
+  const opening = !settingsPanel.classList.contains('open');
+  settingsPanel.classList.toggle('open');
+  settingsBtn.setAttribute('aria-expanded', String(opening));
+  settingsPanel.setAttribute('aria-hidden',  String(!opening));
+});
+
+// Close panel when clicking outside
+document.addEventListener('pointerdown', (e) => {
+  if (!settingsPanel.contains(e.target as Node) &&
+      e.target !== settingsBtn && !settingsBtn.contains(e.target as Node)) {
+    settingsPanel.classList.remove('open');
+    settingsBtn.setAttribute('aria-expanded', 'false');
+    settingsPanel.setAttribute('aria-hidden',  'true');
+  }
+});
+
+// --- Button groups ---
+function setupBtnGroup(groupId: string, onChange: (val: string) => void) {
+  const group = document.getElementById(groupId)!;
+  group.querySelectorAll<HTMLButtonElement>('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      onChange(btn.dataset.value ?? '');
+    });
+  });
+}
+
+setupBtnGroup('bgModeGroup', (val) => {
+  settings.bgMode = val as Settings['bgMode'];
+  updateBgRows();
+});
+
+setupBtnGroup('latticeModeGroup', (val) => {
+  settings.latticeMode = val as Settings['latticeMode'];
+  updateLatticeRows();
+});
+
+setupBtnGroup('waveModeGroup', (val) => {
+  settings.waveMode = val as Settings['waveMode'];
+});
+
+function updateBgRows() {
+  const solidRow = document.getElementById('bgSolidRow')!;
+  const touchRow = document.getElementById('bgTouchRow')!;
+  // bgSolidColor is always used as the canvas base fill regardless of mode,
+  // so keep the picker visible in all modes so the user can adjust it.
+  solidRow.classList.remove('hidden');
+  touchRow.classList.toggle('hidden', settings.bgMode !== 'touch');
+}
+
+function updateLatticeRows() {
+  const solidRow = document.getElementById('latticeSolidRow')!;
+  const touchRow = document.getElementById('latticeTouchRow')!;
+  solidRow.classList.toggle('hidden', settings.latticeMode !== 'solid');
+  touchRow.classList.toggle('hidden', settings.latticeMode !== 'touch');
+}
+
+// --- Color pickers ---
+function bindColor(id: string, setter: (v: string) => void) {
+  const el = document.getElementById(id) as HTMLInputElement;
+  el.addEventListener('input', () => setter(el.value));
+}
+bindColor('bgSolidColor',      v => { settings.bgSolidColor      = v; });
+bindColor('bgTouchColor',      v => { settings.bgTouchColor      = v; });
+bindColor('latticeSolidColor', v => { settings.latticeSolidColor = v; });
+bindColor('latticeTouchColor', v => { settings.latticeTouchColor = v; });
+
+// --- Sliders ---
+function bindSlider(sliderId: string, displayId: string, setter: (n: number) => void) {
+  const slider  = document.getElementById(sliderId)  as HTMLInputElement;
+  const display = document.getElementById(displayId) as HTMLElement;
+  slider.addEventListener('input', () => {
+    const v = Number(slider.value);
+    display.textContent = String(v);
+    setter(v);
+  });
+}
+bindSlider('speedSlider',      'speedDisplay',      v => { settings.speed      = v; });
+bindSlider('wavelengthSlider', 'wavelengthDisplay', v => { settings.wavelength = v; });
+bindSlider('decaySlider',      'decayDisplay',      v => { settings.decay      = v; });
+bindSlider('lifetimeSlider',   'lifetimeDisplay',   v => { settings.lifetime   = v; });
+bindSlider('bondWidthSlider',  'bondWidthDisplay',  v => { settings.bondWidth  = v; });
+bindSlider('variationSlider',  'variationDisplay',  v => { settings.variation  = v; });
+
+// ===== INIT =====
+window.addEventListener('resize', () => {
+  cancelAnimationFrame(rafId);
+  resize();
+  rafId = requestAnimationFrame(drawFrame);
+});
+
+resize();
+rafId = requestAnimationFrame(drawFrame);
+</script>
