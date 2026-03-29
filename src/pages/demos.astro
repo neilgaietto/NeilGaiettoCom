@@ -42,7 +42,6 @@ const demos = [
 
 <style>
   .demos-main {
-    min-width: 320px;
     max-width: 600px;
     width: 100%;
   }
@@ -73,7 +72,8 @@ const demos = [
     transition: background 0.2s;
   }
 
-  .demo-card:hover {
+  .demo-card:hover,
+  .demo-card:focus-within {
     background: rgba(255, 255, 255, 0.12);
   }
 
