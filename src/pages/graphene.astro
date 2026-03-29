@@ -67,16 +67,16 @@ import Layout from '../layouts/Layout.astro';
 
       <div class="panel-section">
         <div class="slider-row">
-          <label>Speed <span id="speedDisplay">200</span></label>
-          <input type="range" id="speedSlider" min="50" max="600" value="200" step="10">
+          <label>Speed <span id="speedDisplay">150</span></label>
+          <input type="range" id="speedSlider" min="50" max="600" value="150" step="10">
         </div>
         <div class="slider-row">
           <label>Wavelength <span id="wavelengthDisplay">80</span></label>
           <input type="range" id="wavelengthSlider" min="20" max="200" value="80" step="5">
         </div>
         <div class="slider-row">
-          <label>Decay <span id="decayDisplay">3</span></label>
-          <input type="range" id="decaySlider" min="1" max="10" value="3">
+          <label>Decay <span id="decayDisplay">5</span></label>
+          <input type="range" id="decaySlider" min="1" max="10" value="5">
         </div>
         <div class="slider-row">
           <label>Lifetime <span id="lifetimeDisplay">3</span>s</label>
@@ -326,9 +326,9 @@ const settings: Settings = {
   latticeSolidColor: '#ffffff',
   latticeTouchColor: '#00ff88',
   waveMode:          'ripple',
-  speed:             200,
+  speed:             150,
   wavelength:        80,
-  decay:             3,
+  decay:             5,
   lifetime:          3,
   bondWidth:         1.4,
   variation:         0,
@@ -443,7 +443,7 @@ function waveVal(dx: number, dy: number, dt: number, wavePhase: number): number 
 
   const fade = 1 - dt / settings.lifetime;
   const { speed, wavelength, decay } = settings;
-  const decayFactor = decay * 0.0012;
+  const decayFactor = decay * 0.003; // tuned so decay=5 (default) dies out ~260 px
 
   switch (settings.waveMode) {
     case 'ripple': {
