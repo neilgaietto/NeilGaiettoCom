@@ -80,6 +80,10 @@ import Layout from '../layouts/Layout.astro';
           <label>Lifetime <span id="lifetimeDisplay">3</span>s</label>
           <input type="range" id="lifetimeSlider" min="1" max="8" value="3">
         </div>
+        <div class="slider-row">
+          <label>Line Width <span id="bondWidthDisplay">1.4</span></label>
+          <input type="range" id="bondWidthSlider" min="0.5" max="6" value="1.4" step="0.1">
+        </div>
       </div>
     </div>
   </div>
@@ -289,6 +293,7 @@ interface Settings {
   wavelength:      number; // px
   decay:           number; // 1–10 scale
   lifetime:        number; // seconds
+  bondWidth:       number; // px
 }
 
 // ===== STATE =====
@@ -318,6 +323,7 @@ const settings: Settings = {
   wavelength:        80,
   decay:             3,
   lifetime:          3,
+  bondWidth:         1.4,
 };
 
 // ===== LATTICE GENERATION =====
@@ -553,7 +559,7 @@ function drawFrame(ts: number) {
   // --- Bonds ---
   for (const bond of bonds) {
     ctx.strokeStyle = latticeColor(bond.mx, bond.my, now);
-    ctx.lineWidth   = BOND_W;
+    ctx.lineWidth   = settings.bondWidth;
     ctx.beginPath();
     ctx.moveTo(bond.ax, bond.ay);
     ctx.lineTo(bond.bx, bond.by);
@@ -699,6 +705,7 @@ bindSlider('speedSlider',      'speedDisplay',      v => { settings.speed      =
 bindSlider('wavelengthSlider', 'wavelengthDisplay', v => { settings.wavelength = v; });
 bindSlider('decaySlider',      'decayDisplay',      v => { settings.decay      = v; });
 bindSlider('lifetimeSlider',   'lifetimeDisplay',   v => { settings.lifetime   = v; });
+bindSlider('bondWidthSlider',  'bondWidthDisplay',  v => { settings.bondWidth  = v; });
 
 // ===== INIT =====
 window.addEventListener('resize', () => {
