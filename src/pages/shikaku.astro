@@ -1,0 +1,926 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Shikaku — NeilGaietto.com"
+  description="A minimalist Shikaku logic puzzle. Divide the grid into rectangles — each number equals its rectangle's area."
+>
+  <div class="game-page">
+    <div class="game-container">
+      <header class="game-header">
+        <div class="stat">
+          <span class="stat-label">Level</span>
+          <span id="level-display">1</span>
+        </div>
+        <div class="game-title">SHIKAKU</div>
+        <div class="stat">
+          <span class="stat-label">Moves</span>
+          <span id="moves-display">0</span>
+        </div>
+      </header>
+
+      <div class="canvas-wrap">
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay" class="overlay">
+          <h2 id="overlay-title">SHIKAKU</h2>
+          <p id="overlay-message">
+            Divide the grid into rectangles.<br>
+            Each number = that rectangle's area.
+          </p>
+          <div id="level-select" class="level-select">
+            <button class="level-btn" data-level="0">1</button>
+            <button class="level-btn" data-level="1">2</button>
+            <button class="level-btn" data-level="2">3</button>
+            <button class="level-btn" data-level="3">4</button>
+            <button class="level-btn" data-level="4">5</button>
+          </div>
+          <button id="overlay-btn">PLAY</button>
+          <a href="/demos" class="overlay-back">← Back to demos</a>
+        </div>
+      </div>
+
+      <footer class="game-footer">
+        <button id="undo-btn" class="ctrl-btn">↩ Undo</button>
+        <button id="reset-btn" class="ctrl-btn">↺ Reset</button>
+        <a href="/demos" class="back-link">← Back</a>
+      </footer>
+    </div>
+  </div>
+</Layout>
+
+<style is:global>
+  body {
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    padding: 0;
+  }
+</style>
+
+<style>
+  .game-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh;
+    padding: 12px;
+    box-sizing: border-box;
+  }
+
+  .game-container {
+    display: flex;
+    flex-direction: column;
+    background: rgba(4, 6, 20, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      0 0 0 1px rgba(120, 80, 255, 0.18),
+      0 0 60px rgba(0, 0, 0, 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    max-width: 520px;
+    width: 100%;
+  }
+
+  /* ── Header ── */
+  .game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .game-title {
+    font-size: 0.72em;
+    letter-spacing: 5px;
+    opacity: 0.35;
+    text-transform: uppercase;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+  }
+
+  .stat-label {
+    font-size: 0.6em;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    opacity: 0.45;
+  }
+
+  #level-display, #moves-display {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #ffd700;
+  }
+
+  /* ── Canvas ── */
+  .canvas-wrap {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: crosshair;
+  }
+
+  /* ── Overlay ── */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: rgba(4, 6, 20, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .overlay.hidden { display: none; }
+
+  .overlay h2 {
+    font-size: 2.2em;
+    margin: 0;
+    letter-spacing: 6px;
+    background: linear-gradient(135deg, #ff6b6b, #ffd700, #51cf66, #339af0, #cc5de8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 0 18px rgba(255,215,0,0.4));
+  }
+
+  .overlay p {
+    margin: 0;
+    font-size: 0.87em;
+    opacity: 0.6;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .level-select {
+    display: flex;
+    gap: 8px;
+  }
+
+  .level-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.06);
+    color: white;
+    font-family: 'Maitree', serif;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .level-btn:hover,
+  .level-btn.active {
+    border-color: #ffd700;
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.12);
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.25);
+  }
+
+  .level-btn.completed {
+    border-color: #51cf66;
+    color: #51cf66;
+    background: rgba(81, 207, 102, 0.1);
+  }
+
+  #overlay-btn {
+    background: rgba(255, 215, 0, 0.13);
+    border: 1.5px solid rgba(255, 215, 0, 0.6);
+    color: #ffd700;
+    font-family: 'Maitree', serif;
+    font-size: 0.95em;
+    letter-spacing: 3px;
+    padding: 0.55em 2.2em;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    text-transform: uppercase;
+  }
+
+  #overlay-btn:hover {
+    background: rgba(255, 215, 0, 0.26);
+    box-shadow: 0 0 22px rgba(255, 215, 0, 0.35);
+  }
+
+  .overlay-back {
+    font-size: 0.78em;
+    opacity: 0.4;
+    color: white;
+    font-style: italic;
+    text-decoration: none;
+  }
+
+  .overlay-back:hover { opacity: 0.7; }
+
+  /* ── Footer ── */
+  .game-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+    min-height: 38px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .ctrl-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.65);
+    font-family: 'Maitree', serif;
+    font-size: 0.78em;
+    padding: 0.3em 0.85em;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+
+  .ctrl-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .back-link {
+    font-size: 0.78em;
+    opacity: 0.4;
+    color: white;
+    font-style: italic;
+    text-decoration: none;
+    min-width: 60px;
+    text-align: right;
+  }
+
+  .back-link:hover { opacity: 0.7; }
+
+  @media screen and (max-width: 480px) {
+    .game-page { padding: 6px; }
+    .game-header, .game-footer { padding: 7px 12px; }
+  }
+
+  @media screen and (orientation: landscape) and (max-height: 520px) {
+    .game-header, .game-footer { padding: 4px 14px; min-height: 28px; }
+    .game-title { display: none; }
+  }
+</style>
+
+<script>
+// ── TYPES ──
+interface Clue { row: number; col: number; value: number; }
+interface LevelDef { rows: number; cols: number; clues: Clue[]; label: string; }
+interface Rect { r1: number; c1: number; r2: number; c2: number; colorIdx: number; }
+interface DragState { r1: number; c1: number; r2: number; c2: number; }
+
+// ── COLOR PALETTE ──
+const PALETTE = [
+  { bg: 'rgba(255,94,94,0.38)',   border: '#ff5e5e',  glow: '#ff5e5e'  },
+  { bg: 'rgba(255,165,0,0.38)',   border: '#ffa500',  glow: '#ffa500'  },
+  { bg: 'rgba(255,225,0,0.38)',   border: '#ffe100',  glow: '#ffe100'  },
+  { bg: 'rgba(81,207,102,0.38)',  border: '#51cf66',  glow: '#51cf66'  },
+  { bg: 'rgba(0,229,255,0.38)',   border: '#00e5ff',  glow: '#00e5ff'  },
+  { bg: 'rgba(82,148,255,0.38)',  border: '#5294ff',  glow: '#5294ff'  },
+  { bg: 'rgba(190,120,255,0.38)', border: '#be78ff',  glow: '#be78ff'  },
+  { bg: 'rgba(255,128,171,0.38)', border: '#ff80ab',  glow: '#ff80ab'  },
+  { bg: 'rgba(100,255,218,0.38)', border: '#64ffda',  glow: '#64ffda'  },
+  { bg: 'rgba(255,182,100,0.38)', border: '#ffb664',  glow: '#ffb664'  },
+];
+
+// ── LEVELS ──
+// Each level is a handcrafted Shikaku puzzle with a unique solution.
+// Clue positions uniquely determine their rectangles.
+const LEVELS: LevelDef[] = [
+  {
+    label: '4×4', rows: 4, cols: 4,
+    clues: [
+      { row: 0, col: 1, value: 4 },
+      { row: 1, col: 2, value: 4 },
+      { row: 3, col: 0, value: 4 },
+      { row: 2, col: 3, value: 4 },
+    ],
+    // Solution: four 2×2 quadrants
+  },
+  {
+    label: '5×5', rows: 5, cols: 5,
+    clues: [
+      { row: 1, col: 0, value: 4 },
+      { row: 0, col: 4, value: 6 },
+      { row: 2, col: 0, value: 4 },
+      { row: 3, col: 3, value: 4 },
+      { row: 4, col: 4, value: 3 },
+      { row: 4, col: 1, value: 3 },
+      { row: 4, col: 3, value: 1 },
+    ],
+    // Solution: A(0,0)-(1,1)=4, B(0,2)-(1,4)=6, C(2,0)-(3,1)=4,
+    //           D(2,2)-(3,3)=4, E(2,4)-(4,4)=3, F(4,0)-(4,2)=3, G(4,3)=1
+  },
+  {
+    label: '6×6', rows: 6, cols: 6,
+    clues: [
+      { row: 1, col: 0, value: 6 },
+      { row: 0, col: 3, value: 4 },
+      { row: 2, col: 3, value: 4 },
+      { row: 1, col: 5, value: 4 },
+      { row: 4, col: 1, value: 6 },
+      { row: 3, col: 4, value: 4 },
+      { row: 5, col: 5, value: 3 },
+      { row: 5, col: 1, value: 3 },
+      { row: 5, col: 3, value: 2 },
+    ],
+    // Solution: A(0,0)-(2,1)=6, B(0,2)-(0,5)=4, C(1,2)-(2,3)=4,
+    //           D(1,4)-(2,5)=4, E(3,0)-(4,2)=6, F(3,3)-(4,4)=4,
+    //           G(3,5)-(5,5)=3, H(5,0)-(5,2)=3, I(5,3)-(5,4)=2
+  },
+  {
+    label: '7×7', rows: 7, cols: 7,
+    clues: [
+      { row: 0, col: 0, value: 4 },
+      { row: 1, col: 3, value: 6 },
+      { row: 0, col: 5, value: 3 },
+      { row: 2, col: 6, value: 6 },
+      { row: 3, col: 1, value: 4 },
+      { row: 4, col: 2, value: 4 },
+      { row: 4, col: 5, value: 4 },
+      { row: 4, col: 6, value: 3 },
+      { row: 5, col: 0, value: 4 },
+      { row: 6, col: 3, value: 4 },
+      { row: 5, col: 4, value: 4 },
+      { row: 6, col: 0, value: 2 },
+      { row: 6, col: 6, value: 1 },
+    ],
+    // Solution:
+    // A(0,0)-(1,1)=4, B(0,2)-(2,3)=6, C(0,4)-(0,6)=3, D(1,4)-(2,6)=6,
+    // E(2,0)-(3,1)=4, F(3,2)-(4,3)=4, G(3,4)-(4,5)=4, H(3,6)-(5,6)=3,
+    // I(4,0)-(5,1)=4, J(5,2)-(6,3)=4, K(5,4)-(6,5)=4, L(6,0)-(6,1)=2, M(6,6)=1
+  },
+  {
+    label: '8×8', rows: 8, cols: 8,
+    clues: [
+      { row: 0, col: 0, value: 4 },
+      { row: 1, col: 2, value: 4 },
+      { row: 0, col: 5, value: 4 },
+      { row: 1, col: 7, value: 4 },
+      { row: 2, col: 1, value: 3 },
+      { row: 2, col: 4, value: 6 },
+      { row: 2, col: 7, value: 2 },
+      { row: 3, col: 0, value: 3 },
+      { row: 3, col: 7, value: 2 },
+      { row: 5, col: 0, value: 4 },
+      { row: 4, col: 3, value: 4 },
+      { row: 5, col: 4, value: 4 },
+      { row: 4, col: 7, value: 4 },
+      { row: 7, col: 1, value: 4 },
+      { row: 6, col: 2, value: 4 },
+      { row: 7, col: 5, value: 4 },
+      { row: 6, col: 6, value: 4 },
+    ],
+    // Solution:
+    // A(0,0)-(1,1)=4, B(0,2)-(1,3)=4, C(0,4)-(1,5)=4, D(0,6)-(1,7)=4,
+    // E(2,0)-(2,2)=3, F(2,3)-(3,5)=6, G(2,6)-(2,7)=2,
+    // H(3,0)-(3,2)=3, I(3,6)-(3,7)=2,
+    // J(4,0)-(5,1)=4, K(4,2)-(5,3)=4, L(4,4)-(5,5)=4, M(4,6)-(5,7)=4,
+    // N(6,0)-(7,1)=4, O(6,2)-(7,3)=4, P(6,4)-(7,5)=4, Q(6,6)-(7,7)=4
+  },
+];
+
+// ── CANVAS SETUP ──
+const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+const ctx    = canvas.getContext('2d')!;
+
+function sizeCanvas() {
+  const wrap = canvas.parentElement!;
+  const w = wrap.clientWidth;
+  const maxH = window.innerHeight - 130;
+  canvas.width  = w;
+  canvas.height = Math.min(Math.round(w * 1.05), maxH);
+}
+
+// ── STATE ──
+let currentLevelIdx = 0;
+let placedRects: Rect[] = [];
+let history: Rect[][] = [];
+let moves = 0;
+let colorCounter = 0;
+let phase: 'menu' | 'playing' | 'won' = 'menu';
+let drag: DragState | null = null;
+let dragIsMove = false;
+let flashInvalid = 0;
+let winPulse = 0;
+let completedLevels = new Set<number>();
+
+// ── PROGRESS PERSISTENCE ──
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem('shikaku-progress');
+    if (raw) {
+      const data = JSON.parse(raw) as { completed: number[] };
+      completedLevels = new Set(data.completed ?? []);
+    }
+  } catch {}
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem('shikaku-progress', JSON.stringify({ completed: [...completedLevels] }));
+  } catch {}
+}
+
+// ── GRID GEOMETRY ──
+function cellSize(): number {
+  const lv = LEVELS[currentLevelIdx];
+  const pad = 24;
+  return Math.floor(Math.min(
+    (canvas.width  - pad * 2) / lv.cols,
+    (canvas.height - pad * 2) / lv.rows,
+  ));
+}
+
+function gridOffset(): { ox: number; oy: number } {
+  const lv = LEVELS[currentLevelIdx];
+  const cs = cellSize();
+  return {
+    ox: Math.floor((canvas.width  - cs * lv.cols) / 2),
+    oy: Math.floor((canvas.height - cs * lv.rows) / 2),
+  };
+}
+
+function cellFromPoint(px: number, py: number): { r: number; c: number } | null {
+  const { ox, oy } = gridOffset();
+  const cs = cellSize();
+  const lv = LEVELS[currentLevelIdx];
+  const c = Math.floor((px - ox) / cs);
+  const r = Math.floor((py - oy) / cs);
+  if (r < 0 || r >= lv.rows || c < 0 || c >= lv.cols) return null;
+  return { r, c };
+}
+
+function canvasPos(e: MouseEvent | Touch): { x: number; y: number } {
+  const rect = canvas.getBoundingClientRect();
+  const sx = canvas.width  / rect.width;
+  const sy = canvas.height / rect.height;
+  return {
+    x: (e.clientX - rect.left) * sx,
+    y: (e.clientY - rect.top)  * sy,
+  };
+}
+
+// ── VALIDATION ──
+function normalise(d: DragState) {
+  return {
+    r1: Math.min(d.r1, d.r2), c1: Math.min(d.c1, d.c2),
+    r2: Math.max(d.r1, d.r2), c2: Math.max(d.c1, d.c2),
+  };
+}
+
+function rectsOverlap(a: Rect, b: { r1: number; c1: number; r2: number; c2: number }): boolean {
+  return a.r1 <= b.r2 && a.r2 >= b.r1 && a.c1 <= b.c2 && a.c2 >= b.c1;
+}
+
+function validateRect(r1: number, c1: number, r2: number, c2: number): boolean {
+  const lv = LEVELS[currentLevelIdx];
+  const area = (r2 - r1 + 1) * (c2 - c1 + 1);
+  const inside = lv.clues.filter(cl =>
+    cl.row >= r1 && cl.row <= r2 && cl.col >= c1 && cl.col <= c2,
+  );
+  return inside.length === 1 && area === inside[0].value;
+}
+
+function checkWin(): boolean {
+  const lv = LEVELS[currentLevelIdx];
+  const total = lv.rows * lv.cols;
+  const covered = new Set<string>();
+  for (const rect of placedRects) {
+    const { r1, c1, r2, c2 } = rect;
+    const area = (r2 - r1 + 1) * (c2 - c1 + 1);
+    const inside = lv.clues.filter(cl =>
+      cl.row >= r1 && cl.row <= r2 && cl.col >= c1 && cl.col <= c2,
+    );
+    if (inside.length !== 1 || area !== inside[0].value) return false;
+    for (let r = r1; r <= r2; r++)
+      for (let c = c1; c <= c2; c++)
+        covered.add(`${r},${c}`);
+  }
+  return covered.size === total;
+}
+
+// ── SOUND ──
+let audioCtx: AudioContext | null = null;
+function tone(freq: number, dur: number, type: OscillatorType = 'sine', vol = 0.12) {
+  try {
+    if (!audioCtx) audioCtx = new AudioContext();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  } catch {}
+}
+function soundPlace()   { tone(480, 0.09); }
+function soundInvalid() { tone(180, 0.14, 'sawtooth', 0.07); }
+function soundUndo()    { tone(330, 0.08); }
+function soundWin()     {
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.25, 'sine', 0.1), i * 90));
+}
+
+// ── HUD ──
+const elLevel = document.getElementById('level-display')!;
+const elMoves = document.getElementById('moves-display')!;
+
+function updateHUD() {
+  elLevel.textContent = String(currentLevelIdx + 1);
+  elMoves.textContent = String(moves);
+}
+
+// ── OVERLAY ──
+const overlay    = document.getElementById('overlay')!;
+const elTitle    = document.getElementById('overlay-title')!;
+const elMsg      = document.getElementById('overlay-message')!;
+const elBtn      = document.getElementById('overlay-btn')!;
+const levelBtns  = document.querySelectorAll<HTMLButtonElement>('.level-btn');
+const levelSel   = document.getElementById('level-select')!;
+
+function showOverlay(title: string, msg: string, btn: string, showLevels = false) {
+  overlay.classList.remove('hidden');
+  elTitle.textContent = title;
+  elMsg.innerHTML     = msg;
+  elBtn.textContent   = btn;
+  levelSel.style.display = showLevels ? 'flex' : 'none';
+  refreshLevelBtns();
+}
+
+function hideOverlay() { overlay.classList.add('hidden'); }
+
+function refreshLevelBtns() {
+  levelBtns.forEach((btn, i) => {
+    btn.classList.toggle('active',    i === currentLevelIdx);
+    btn.classList.toggle('completed', completedLevels.has(i));
+  });
+}
+
+levelBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentLevelIdx = Number(btn.dataset.level);
+    refreshLevelBtns();
+  });
+});
+
+elBtn.addEventListener('click', () => {
+  if (phase === 'menu' || phase === 'won') startLevel(currentLevelIdx);
+});
+
+// ── GAME FLOW ──
+function startLevel(idx: number) {
+  currentLevelIdx = idx;
+  placedRects  = [];
+  history      = [];
+  moves        = 0;
+  colorCounter = 0;
+  drag         = null;
+  phase        = 'playing';
+  winPulse     = 0;
+  hideOverlay();
+  updateHUD();
+}
+
+function handleWin() {
+  phase    = 'won';
+  winPulse = 1;
+  completedLevels.add(currentLevelIdx);
+  saveProgress();
+  soundWin();
+  const isLast = currentLevelIdx === LEVELS.length - 1;
+  const nextMsg = isLast
+    ? 'You solved all puzzles!'
+    : 'Well done! Ready for the next?';
+  if (!isLast) currentLevelIdx++;
+  setTimeout(() => showOverlay(
+    'SOLVED!',
+    `${nextMsg}<br><br>Pick a level or continue:`,
+    isLast ? 'PLAY AGAIN' : 'NEXT LEVEL',
+    true,
+  ), 600);
+}
+
+// ── INPUT ──
+let pointerStartCell: { r: number; c: number } | null = null;
+
+function onPointerDown(px: number, py: number) {
+  if (phase !== 'playing') return;
+  const cell = cellFromPoint(px, py);
+  if (!cell) return;
+  pointerStartCell = cell;
+  drag = { r1: cell.r, c1: cell.c, r2: cell.r, c2: cell.c };
+  dragIsMove = false;
+}
+
+function onPointerMove(px: number, py: number) {
+  if (!drag || phase !== 'playing') return;
+  const cell = cellFromPoint(px, py);
+  if (!cell) return;
+  if (cell.r !== drag.r1 || cell.c !== drag.c1) dragIsMove = true;
+  drag.r2 = cell.r;
+  drag.c2 = cell.c;
+}
+
+function onPointerUp(px: number, py: number) {
+  if (!drag || phase !== 'playing') { drag = null; return; }
+  const { r1, c1, r2, c2 } = normalise(drag);
+  drag = null;
+
+  if (!dragIsMove) {
+    // Single-cell tap: remove rect under cursor
+    const idx = placedRects.findIndex(rc =>
+      r1 >= rc.r1 && r1 <= rc.r2 && c1 >= rc.c1 && c1 <= rc.c2,
+    );
+    if (idx !== -1) {
+      history.push(placedRects.map(r => ({ ...r })));
+      placedRects.splice(idx, 1);
+      moves++;
+      updateHUD();
+      soundUndo();
+    }
+    return;
+  }
+
+  if (validateRect(r1, c1, r2, c2)) {
+    history.push(placedRects.map(r => ({ ...r })));
+    placedRects = placedRects.filter(rc => !rectsOverlap(rc, { r1, c1, r2, c2 }));
+    placedRects.push({ r1, c1, r2, c2, colorIdx: colorCounter % PALETTE.length });
+    colorCounter++;
+    moves++;
+    updateHUD();
+    soundPlace();
+    if (checkWin()) handleWin();
+  } else {
+    flashInvalid = 18;
+    soundInvalid();
+  }
+}
+
+// Mouse
+canvas.addEventListener('mousedown',  e => { e.preventDefault(); const p = canvasPos(e); onPointerDown(p.x, p.y); });
+canvas.addEventListener('mousemove',  e => { const p = canvasPos(e); onPointerMove(p.x, p.y); });
+canvas.addEventListener('mouseup',    e => { const p = canvasPos(e); onPointerUp(p.x, p.y); });
+canvas.addEventListener('mouseleave', () => { drag = null; });
+
+// Touch
+canvas.addEventListener('touchstart',  e => { e.preventDefault(); const p = canvasPos(e.touches[0]); onPointerDown(p.x, p.y); }, { passive: false });
+canvas.addEventListener('touchmove',   e => { e.preventDefault(); const p = canvasPos(e.touches[0]); onPointerMove(p.x, p.y); }, { passive: false });
+canvas.addEventListener('touchend',    e => { e.preventDefault(); const t = e.changedTouches[0]; const p = canvasPos(t); onPointerUp(p.x, p.y); }, { passive: false });
+
+// Controls
+document.getElementById('undo-btn')!.addEventListener('click', () => {
+  if (history.length === 0 || phase !== 'playing') return;
+  placedRects = history.pop()!;
+  moves++;
+  updateHUD();
+  soundUndo();
+});
+
+document.getElementById('reset-btn')!.addEventListener('click', () => {
+  if (phase !== 'playing') return;
+  if (placedRects.length > 0) {
+    history.push(placedRects.map(r => ({ ...r })));
+    placedRects = [];
+    moves++;
+    updateHUD();
+  }
+});
+
+// ── DRAWING ──
+function drawBackground() {
+  ctx.fillStyle = 'rgba(5, 7, 22, 0.95)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawGrid() {
+  const lv = LEVELS[currentLevelIdx];
+  const cs = cellSize();
+  const { ox, oy } = gridOffset();
+  const gw = cs * lv.cols;
+  const gh = cs * lv.rows;
+
+  // Grid cell backgrounds
+  for (let r = 0; r < lv.rows; r++) {
+    for (let c = 0; c < lv.cols; c++) {
+      const x = ox + c * cs;
+      const y = oy + r * cs;
+      ctx.fillStyle = (r + c) % 2 === 0 ? 'rgba(255,255,255,0.025)' : 'rgba(255,255,255,0.012)';
+      ctx.fillRect(x + 1, y + 1, cs - 1, cs - 1);
+    }
+  }
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth   = 1;
+  for (let r = 0; r <= lv.rows; r++) {
+    const y = oy + r * cs;
+    ctx.beginPath(); ctx.moveTo(ox, y); ctx.lineTo(ox + gw, y); ctx.stroke();
+  }
+  for (let c = 0; c <= lv.cols; c++) {
+    const x = ox + c * cs;
+    ctx.beginPath(); ctx.moveTo(x, oy); ctx.lineTo(x, oy + gh); ctx.stroke();
+  }
+
+  // Outer border
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(ox, oy, gw, gh);
+}
+
+function drawRect(r1: number, c1: number, r2: number, c2: number, color: typeof PALETTE[0], alpha = 1) {
+  const cs = cellSize();
+  const { ox, oy } = gridOffset();
+  const pad  = 2;
+  const x    = ox + c1 * cs + pad;
+  const y    = oy + r1 * cs + pad;
+  const w    = (c2 - c1 + 1) * cs - pad * 2;
+  const h    = (r2 - r1 + 1) * cs - pad * 2;
+  const rad  = Math.min(6, cs * 0.18);
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Fill
+  ctx.fillStyle = color.bg;
+  ctx.shadowColor = color.glow;
+  ctx.shadowBlur  = 12;
+  roundRect(x, y, w, h, rad);
+  ctx.fill();
+
+  // Border
+  ctx.shadowBlur  = 8;
+  ctx.strokeStyle = color.border;
+  ctx.lineWidth   = 2;
+  roundRect(x, y, w, h, rad);
+  ctx.stroke();
+
+  // Subtle inner sheen
+  ctx.shadowBlur  = 0;
+  ctx.globalAlpha = alpha * 0.18;
+  ctx.fillStyle   = 'white';
+  roundRect(x + 3, y + 3, w - 6, Math.min(h - 6, cs * 0.28), rad * 0.6);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawPlacedRects() {
+  for (const rect of placedRects) {
+    drawRect(rect.r1, rect.c1, rect.r2, rect.c2, PALETTE[rect.colorIdx % PALETTE.length]);
+  }
+}
+
+function drawDragPreview() {
+  if (!drag || phase !== 'playing') return;
+  const { r1, c1, r2, c2 } = normalise(drag);
+  const isValid = validateRect(r1, c1, r2, c2);
+  const flash   = flashInvalid > 0;
+
+  const previewColor = flash
+    ? { bg: 'rgba(255,60,60,0.25)',  border: '#ff4040', glow: '#ff4040' }
+    : isValid
+      ? { bg: 'rgba(100,255,120,0.22)', border: '#64ff82', glow: '#64ff82' }
+      : { bg: 'rgba(255,255,255,0.08)', border: 'rgba(255,255,255,0.3)', glow: 'transparent' };
+
+  drawRect(r1, c1, r2, c2, previewColor, flash ? 0.5 + 0.5 * Math.sin(Date.now() / 60) : 0.9);
+}
+
+function drawClues() {
+  const lv = LEVELS[currentLevelIdx];
+  const cs = cellSize();
+  const { ox, oy } = gridOffset();
+  const fontSize = Math.max(10, Math.round(cs * 0.42));
+
+  ctx.font      = `bold ${fontSize}px 'Maitree', serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  for (const cl of lv.clues) {
+    const x = ox + cl.col * cs + cs / 2;
+    const y = oy + cl.row * cs + cs / 2;
+
+    // Find if this clue is inside a placed rect
+    const inRect = placedRects.find(rc =>
+      cl.row >= rc.r1 && cl.row <= rc.r2 && cl.col >= rc.c1 && cl.col <= rc.c2,
+    );
+
+    if (inRect) {
+      const col = PALETTE[inRect.colorIdx % PALETTE.length];
+      ctx.fillStyle  = col.border;
+      ctx.shadowColor = col.glow;
+    } else {
+      ctx.fillStyle  = '#ffd700';
+      ctx.shadowColor = '#ffd700';
+    }
+
+    ctx.shadowBlur = 10;
+    ctx.fillText(String(cl.value), x, y);
+    ctx.shadowBlur = 0;
+
+    // Small dot indicator
+    ctx.fillStyle = ctx.fillStyle;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.arc(x, y + fontSize * 0.62, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawWinOverlay() {
+  if (phase !== 'won' || winPulse <= 0) return;
+  const p = winPulse;
+  ctx.save();
+  ctx.globalAlpha = p * 0.22;
+  const grad = ctx.createRadialGradient(
+    canvas.width / 2, canvas.height / 2, 0,
+    canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.7,
+  );
+  grad.addColorStop(0,   'rgba(255,255,255,0.6)');
+  grad.addColorStop(0.4, 'rgba(100,200,255,0.3)');
+  grad.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
+}
+
+function roundRect(x: number, y: number, w: number, h: number, r: number) {
+  const m = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + m, y);
+  ctx.lineTo(x + w - m, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + m);
+  ctx.lineTo(x + w, y + h - m);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - m, y + h);
+  ctx.lineTo(x + m, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - m);
+  ctx.lineTo(x, y + m);
+  ctx.quadraticCurveTo(x, y, x + m, y);
+  ctx.closePath();
+}
+
+// ── RENDER LOOP ──
+let raf = 0;
+
+function frame() {
+  raf = requestAnimationFrame(frame);
+  if (flashInvalid > 0) flashInvalid--;
+  if (winPulse > 0) winPulse = Math.max(0, winPulse - 0.025);
+
+  drawBackground();
+  if (phase !== 'menu') {
+    drawGrid();
+    drawPlacedRects();
+    drawDragPreview();
+    drawClues();
+    drawWinOverlay();
+  }
+}
+
+// ── RESIZE ──
+window.addEventListener('resize', () => {
+  sizeCanvas();
+});
+
+// ── BOOT ──
+loadProgress();
+sizeCanvas();
+updateHUD();
+showOverlay(
+  'SHIKAKU',
+  'Divide the grid into rectangles.<br>Each number = that rectangle\'s area.<br><br>Drag to draw · Tap to erase',
+  'PLAY',
+  true,
+);
+frame();
+</script>
