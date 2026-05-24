@@ -175,6 +175,7 @@ import Layout from '../layouts/Layout.astro';
     opacity: 0.6;
     text-align: center;
     line-height: 1.6;
+    white-space: pre-line;
   }
 
   .level-select {
@@ -456,10 +457,10 @@ function saveProgress() {
 function cellSize(): number {
   const lv = LEVELS[currentLevelIdx];
   const pad = 24;
-  return Math.floor(Math.min(
+  return Math.max(1, Math.floor(Math.min(
     (canvas.width  - pad * 2) / lv.cols,
     (canvas.height - pad * 2) / lv.rows,
-  ));
+  )));
 }
 
 function gridOffset(): { ox: number; oy: number } {
@@ -571,7 +572,7 @@ const levelSel   = document.getElementById('level-select')!;
 function showOverlay(title: string, msg: string, btn: string, showLevels = false) {
   overlay.classList.remove('hidden');
   elTitle.textContent = title;
-  elMsg.innerHTML     = msg;
+  elMsg.textContent   = msg;
   elBtn.textContent   = btn;
   levelSel.style.display = showLevels ? 'flex' : 'none';
   refreshLevelBtns();
@@ -624,20 +625,17 @@ function handleWin() {
   if (!isLast) currentLevelIdx++;
   setTimeout(() => showOverlay(
     'SOLVED!',
-    `${nextMsg}<br><br>Pick a level or continue:`,
+    `${nextMsg}\n\nPick a level or continue:`,
     isLast ? 'PLAY AGAIN' : 'NEXT LEVEL',
     true,
   ), 600);
 }
 
 // ── INPUT ──
-let pointerStartCell: { r: number; c: number } | null = null;
-
 function onPointerDown(px: number, py: number) {
   if (phase !== 'playing') return;
   const cell = cellFromPoint(px, py);
   if (!cell) return;
-  pointerStartCell = cell;
   drag = { r1: cell.r, c1: cell.c, r2: cell.r, c2: cell.c };
   dragIsMove = false;
 }
@@ -657,16 +655,25 @@ function onPointerUp(px: number, py: number) {
   drag = null;
 
   if (!dragIsMove) {
-    // Single-cell tap: remove rect under cursor
-    const idx = placedRects.findIndex(rc =>
+    // Single-cell tap: remove existing rect, or place a 1×1 if there's a value=1 clue
+    const lv = LEVELS[currentLevelIdx];
+    const existingIdx = placedRects.findIndex(rc =>
       r1 >= rc.r1 && r1 <= rc.r2 && c1 >= rc.c1 && c1 <= rc.c2,
     );
-    if (idx !== -1) {
+    if (existingIdx !== -1) {
       history.push(placedRects.map(r => ({ ...r })));
-      placedRects.splice(idx, 1);
+      placedRects.splice(existingIdx, 1);
       moves++;
       updateHUD();
       soundUndo();
+    } else if (lv.clues.some(cl => cl.row === r1 && cl.col === c1 && cl.value === 1)) {
+      history.push(placedRects.map(r => ({ ...r })));
+      placedRects.push({ r1, c1, r2: r1, c2: c1, colorIdx: colorCounter % PALETTE.length });
+      colorCounter++;
+      moves++;
+      updateHUD();
+      soundPlace();
+      if (checkWin()) handleWin();
     }
     return;
   }
@@ -696,6 +703,7 @@ canvas.addEventListener('mouseleave', () => { drag = null; });
 canvas.addEventListener('touchstart',  e => { e.preventDefault(); const p = canvasPos(e.touches[0]); onPointerDown(p.x, p.y); }, { passive: false });
 canvas.addEventListener('touchmove',   e => { e.preventDefault(); const p = canvasPos(e.touches[0]); onPointerMove(p.x, p.y); }, { passive: false });
 canvas.addEventListener('touchend',    e => { e.preventDefault(); const t = e.changedTouches[0]; const p = canvasPos(t); onPointerUp(p.x, p.y); }, { passive: false });
+canvas.addEventListener('touchcancel', () => { drag = null; dragIsMove = false; });
 
 // Controls
 document.getElementById('undo-btn')!.addEventListener('click', () => {
@@ -918,7 +926,7 @@ sizeCanvas();
 updateHUD();
 showOverlay(
   'SHIKAKU',
-  'Divide the grid into rectangles.<br>Each number = that rectangle\'s area.<br><br>Drag to draw · Tap to erase',
+  'Divide the grid into rectangles.\nEach number = that rectangle\'s area.\n\nDrag to draw · Tap to erase',
   'PLAY',
   true,
 );
