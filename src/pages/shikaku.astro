@@ -463,17 +463,24 @@ let dragIsMove = false;
 let flashInvalid = 0;
 let winPulse = 0;
 let bestLevels = [0, 0, 0]; // highest completed level per difficulty index
+let pendingAdvance = false; // true after a win, cleared when startLevel() runs
 
 // ── PROGRESS PERSISTENCE ──
 function loadProgress() {
   try {
     const raw = localStorage.getItem('shikaku-progress');
     if (raw) {
-      const data = JSON.parse(raw) as { bestLevels?: number[]; lastDiff?: number };
-      if (Array.isArray(data.bestLevels)) bestLevels = data.bestLevels;
-      if (typeof data.lastDiff === 'number' && data.lastDiff >= 0 && data.lastDiff < DIFFICULTIES.length) {
-        difficultyIdx = data.lastDiff;
+      const data = JSON.parse(raw) as { bestLevels?: unknown; lastDiff?: unknown };
+      // Sanitize bestLevels: must be array of non-negative finite integers, padded/truncated to DIFFICULTIES.length
+      if (Array.isArray(data.bestLevels)) {
+        bestLevels = Array.from({ length: DIFFICULTIES.length }, (_, i) => {
+          const v = Number(data.bestLevels![i]);
+          return Number.isFinite(v) && v >= 0 ? Math.floor(v) : 0;
+        });
       }
+      // Legacy format { completed: number[] } had 0-4 indices with no mapping to new system — ignored intentionally.
+      const d = Number(data.lastDiff);
+      if (Number.isFinite(d) && d >= 0 && d < DIFFICULTIES.length) difficultyIdx = Math.floor(d);
     }
   } catch {}
   // Resume at the next unsolved level for the restored difficulty
@@ -625,9 +632,11 @@ function refreshDiffBtns() {
 
 diffBtns.forEach(btn => {
   btn.addEventListener('click', () => {
-    difficultyIdx = Number(btn.dataset.diff);
-    levelNumber   = bestLevels[difficultyIdx] > 0 ? bestLevels[difficultyIdx] + 1 : 1;
-    currentLevel  = buildLevel(difficultyIdx, levelNumber);
+    difficultyIdx  = Number(btn.dataset.diff);
+    levelNumber    = bestLevels[difficultyIdx] > 0 ? bestLevels[difficultyIdx] + 1 : 1;
+    pendingAdvance = false; // explicit difficulty switch overrides win-advance
+    currentLevel   = buildLevel(difficultyIdx, levelNumber);
+    saveProgress(); // persist lastDiff immediately so reload restores selection
     refreshDiffBtns();
     updateDiffInfo();
     updateHUD();
@@ -640,6 +649,11 @@ elBtn.addEventListener('click', () => {
 
 // ── GAME FLOW ──
 function startLevel() {
+  // Advance after a win (unless the player switched difficulty, which resets pendingAdvance)
+  if (pendingAdvance) {
+    levelNumber++;
+    pendingAdvance = false;
+  }
   currentLevel = buildLevel(difficultyIdx, levelNumber);
   placedRects  = [];
   history      = [];
@@ -653,17 +667,16 @@ function startLevel() {
 }
 
 function handleWin() {
-  phase    = 'won';
-  winPulse = 1;
-  bestLevels[difficultyIdx] = Math.max(bestLevels[difficultyIdx], levelNumber);
+  phase          = 'won';
+  winPulse       = 1;
+  pendingAdvance = true;
+  bestLevels[difficultyIdx] = Math.max(bestLevels[difficultyIdx] ?? 0, levelNumber);
   saveProgress();
   soundWin();
-  const completed = levelNumber;
-  levelNumber++;
-  currentLevel = buildLevel(difficultyIdx, levelNumber);
+  // currentLevel stays as the solved level so the canvas renders correctly during the win animation
   setTimeout(() => showOverlay(
     'SOLVED!',
-    `Level ${completed} complete!\nReady for level ${levelNumber}?`,
+    `Level ${levelNumber} complete!\nReady for level ${levelNumber + 1}?`,
     'NEXT LEVEL',
     true,
   ), 600);
