@@ -326,6 +326,8 @@ interface DifficultyConfig {
   minRows: number; maxRows: number;
   minCols: number; maxCols: number;
   maxRectW: number; maxRectH: number;
+  // rolls to take the max of when picking rect dimensions; >1 biases toward larger sizes
+  bias: number;
 }
 
 // ── COLOR PALETTE ──
@@ -347,9 +349,9 @@ const PALETTE = [
 // Medium: medium grids, moderate rects → more pieces, moderate challenge
 // Hard:   large grids, small rects → many pieces, complex solutions
 const DIFFICULTIES: DifficultyConfig[] = [
-  { name: 'EASY',   minRows: 4, maxRows: 5,  minCols: 4, maxCols: 5,  maxRectW: 5, maxRectH: 5 },
-  { name: 'MEDIUM', minRows: 6, maxRows: 7,  minCols: 6, maxCols: 7,  maxRectW: 3, maxRectH: 3 },
-  { name: 'HARD',   minRows: 8, maxRows: 10, minCols: 8, maxCols: 10, maxRectW: 3, maxRectH: 3 },
+  { name: 'EASY',   minRows: 4, maxRows: 5,  minCols: 4, maxCols: 5,  maxRectW: 5, maxRectH: 5, bias: 1 },
+  { name: 'MEDIUM', minRows: 6, maxRows: 7,  minCols: 6, maxCols: 7,  maxRectW: 3, maxRectH: 3, bias: 1 },
+  { name: 'HARD',   minRows: 8, maxRows: 10, minCols: 8, maxCols: 10, maxRectW: 3, maxRectH: 3, bias: 2 },
 ];
 
 // ── SEEDED RNG ──
@@ -373,7 +375,17 @@ function generateShikaku(
   rows: number, cols: number,
   maxW: number, maxH: number,
   rng: () => number,
+  bias = 1,
 ): LevelDef {
+  // With bias > 1, pick the max of `bias` uniform draws, skewing toward larger rectangles
+  // and reducing the chance of 1×1 fragments on harder difficulties.
+  const pickSize = (n: number) => {
+    if (n <= 1) return 1;
+    let r = rng();
+    for (let i = 1; i < bias; i++) r = Math.max(r, rng());
+    return 1 + Math.floor(r * n);
+  };
+
   const grid = Array.from({ length: rows }, () => new Array<number>(cols).fill(-1));
   const rects: { r1: number; c1: number; r2: number; c2: number }[] = [];
 
@@ -384,7 +396,7 @@ function generateShikaku(
       // Contiguous free cells to the right in this row
       let availW = 0;
       while (c + availW < cols && grid[r][c + availW] === -1) availW++;
-      const w = 1 + Math.floor(rng() * Math.min(availW, maxW));
+      const w = pickSize(Math.min(availW, maxW));
 
       // Rows downward where all w columns are free
       let availH = 0;
@@ -396,7 +408,7 @@ function generateShikaku(
         if (!ok) break;
         availH = dr + 1;
       }
-      const h = 1 + Math.floor(rng() * Math.min(availH, maxH));
+      const h = pickSize(Math.min(availH, maxH));
 
       const id = rects.length;
       for (let dr = 0; dr < h; dr++)
@@ -422,7 +434,7 @@ function buildLevel(diffIdx: number, lvlNum: number): LevelDef {
   const rng  = seededRandom(seed);
   const rows = diff.minRows + Math.floor(rng() * (diff.maxRows - diff.minRows + 1));
   const cols = diff.minCols + Math.floor(rng() * (diff.maxCols - diff.minCols + 1));
-  return generateShikaku(rows, cols, diff.maxRectW, diff.maxRectH, rng);
+  return generateShikaku(rows, cols, diff.maxRectW, diff.maxRectH, rng, diff.bias);
 }
 
 // ── CANVAS SETUP ──
