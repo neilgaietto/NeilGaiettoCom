@@ -29,12 +29,11 @@ import Layout from '../layouts/Layout.astro';
             Each number = that rectangle's area.
           </p>
           <div id="level-select" class="level-select">
-            <button class="level-btn" data-level="0">1</button>
-            <button class="level-btn" data-level="1">2</button>
-            <button class="level-btn" data-level="2">3</button>
-            <button class="level-btn" data-level="3">4</button>
-            <button class="level-btn" data-level="4">5</button>
+            <button class="diff-btn" data-diff="0">Easy</button>
+            <button class="diff-btn" data-diff="1">Medium</button>
+            <button class="diff-btn" data-diff="2">Hard</button>
           </div>
+          <p id="diff-info" class="diff-info"></p>
           <button id="overlay-btn">PLAY</button>
           <a href="/demos" class="overlay-back">← Back to demos</a>
         </div>
@@ -183,31 +182,54 @@ import Layout from '../layouts/Layout.astro';
     gap: 8px;
   }
 
-  .level-btn {
-    width: 40px;
-    height: 40px;
+  /* ── Difficulty buttons ── */
+  .diff-btn {
+    padding: 0.38em 1.1em;
     border-radius: 8px;
     border: 1.5px solid rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.06);
     color: white;
     font-family: 'Maitree', serif;
-    font-size: 0.95em;
+    font-size: 0.85em;
     cursor: pointer;
     transition: all 0.18s;
+    letter-spacing: 1px;
+    text-transform: uppercase;
   }
 
-  .level-btn:hover,
-  .level-btn.active {
+  .diff-btn:hover {
     border-color: #ffd700;
     color: #ffd700;
     background: rgba(255, 215, 0, 0.12);
     box-shadow: 0 0 14px rgba(255, 215, 0, 0.25);
   }
 
-  .level-btn.completed {
+  .diff-btn[data-diff="0"].active {
     border-color: #51cf66;
     color: #51cf66;
-    background: rgba(81, 207, 102, 0.1);
+    background: rgba(81, 207, 102, 0.12);
+    box-shadow: 0 0 14px rgba(81, 207, 102, 0.25);
+  }
+
+  .diff-btn[data-diff="1"].active {
+    border-color: #ffd700;
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.12);
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.25);
+  }
+
+  .diff-btn[data-diff="2"].active {
+    border-color: #ff5e5e;
+    color: #ff5e5e;
+    background: rgba(255, 94, 94, 0.12);
+    box-shadow: 0 0 14px rgba(255, 94, 94, 0.25);
+  }
+
+  .diff-info {
+    font-size: 0.72em;
+    opacity: 0.45;
+    margin: -6px 0 0;
+    min-height: 1.2em;
   }
 
   #overlay-btn {
@@ -299,6 +321,12 @@ interface Clue { row: number; col: number; value: number; }
 interface LevelDef { rows: number; cols: number; clues: Clue[]; label: string; }
 interface Rect { r1: number; c1: number; r2: number; c2: number; colorIdx: number; }
 interface DragState { r1: number; c1: number; r2: number; c2: number; }
+interface DifficultyConfig {
+  name: string;
+  minRows: number; maxRows: number;
+  minCols: number; maxCols: number;
+  maxRectW: number; maxRectH: number;
+}
 
 // ── COLOR PALETTE ──
 const PALETTE = [
@@ -314,102 +342,88 @@ const PALETTE = [
   { bg: 'rgba(255,182,100,0.38)', border: '#ffb664',  glow: '#ffb664'  },
 ];
 
-// ── LEVELS ──
-// Each level is a handcrafted Shikaku puzzle with a unique solution.
-// Clue positions uniquely determine their rectangles.
-const LEVELS: LevelDef[] = [
-  {
-    label: '4×4', rows: 4, cols: 4,
-    clues: [
-      { row: 0, col: 1, value: 4 },
-      { row: 1, col: 2, value: 4 },
-      { row: 3, col: 0, value: 4 },
-      { row: 2, col: 3, value: 4 },
-    ],
-    // Solution: four 2×2 quadrants
-  },
-  {
-    label: '5×5', rows: 5, cols: 5,
-    clues: [
-      { row: 1, col: 0, value: 4 },
-      { row: 0, col: 4, value: 6 },
-      { row: 2, col: 0, value: 4 },
-      { row: 3, col: 3, value: 4 },
-      { row: 4, col: 4, value: 3 },
-      { row: 4, col: 1, value: 3 },
-      { row: 4, col: 3, value: 1 },
-    ],
-    // Solution: A(0,0)-(1,1)=4, B(0,2)-(1,4)=6, C(2,0)-(3,1)=4,
-    //           D(2,2)-(3,3)=4, E(2,4)-(4,4)=3, F(4,0)-(4,2)=3, G(4,3)=1
-  },
-  {
-    label: '6×6', rows: 6, cols: 6,
-    clues: [
-      { row: 1, col: 0, value: 6 },
-      { row: 0, col: 3, value: 4 },
-      { row: 2, col: 3, value: 4 },
-      { row: 1, col: 5, value: 4 },
-      { row: 4, col: 1, value: 6 },
-      { row: 3, col: 4, value: 4 },
-      { row: 5, col: 5, value: 3 },
-      { row: 5, col: 1, value: 3 },
-      { row: 5, col: 3, value: 2 },
-    ],
-    // Solution: A(0,0)-(2,1)=6, B(0,2)-(0,5)=4, C(1,2)-(2,3)=4,
-    //           D(1,4)-(2,5)=4, E(3,0)-(4,2)=6, F(3,3)-(4,4)=4,
-    //           G(3,5)-(5,5)=3, H(5,0)-(5,2)=3, I(5,3)-(5,4)=2
-  },
-  {
-    label: '7×7', rows: 7, cols: 7,
-    clues: [
-      { row: 0, col: 0, value: 4 },
-      { row: 1, col: 3, value: 6 },
-      { row: 0, col: 5, value: 3 },
-      { row: 2, col: 6, value: 6 },
-      { row: 3, col: 1, value: 4 },
-      { row: 4, col: 2, value: 4 },
-      { row: 4, col: 5, value: 4 },
-      { row: 4, col: 6, value: 3 },
-      { row: 5, col: 0, value: 4 },
-      { row: 6, col: 3, value: 4 },
-      { row: 5, col: 4, value: 4 },
-      { row: 6, col: 0, value: 2 },
-      { row: 6, col: 6, value: 1 },
-    ],
-    // Solution:
-    // A(0,0)-(1,1)=4, B(0,2)-(2,3)=6, C(0,4)-(0,6)=3, D(1,4)-(2,6)=6,
-    // E(2,0)-(3,1)=4, F(3,2)-(4,3)=4, G(3,4)-(4,5)=4, H(3,6)-(5,6)=3,
-    // I(4,0)-(5,1)=4, J(5,2)-(6,3)=4, K(5,4)-(6,5)=4, L(6,0)-(6,1)=2, M(6,6)=1
-  },
-  {
-    label: '8×8', rows: 8, cols: 8,
-    clues: [
-      { row: 0, col: 0, value: 4 },
-      { row: 1, col: 2, value: 4 },
-      { row: 0, col: 5, value: 4 },
-      { row: 1, col: 7, value: 4 },
-      { row: 2, col: 1, value: 3 },
-      { row: 2, col: 4, value: 6 },
-      { row: 2, col: 7, value: 2 },
-      { row: 3, col: 0, value: 3 },
-      { row: 3, col: 7, value: 2 },
-      { row: 5, col: 0, value: 4 },
-      { row: 4, col: 3, value: 4 },
-      { row: 5, col: 4, value: 4 },
-      { row: 4, col: 7, value: 4 },
-      { row: 7, col: 1, value: 4 },
-      { row: 6, col: 2, value: 4 },
-      { row: 7, col: 5, value: 4 },
-      { row: 6, col: 6, value: 4 },
-    ],
-    // Solution:
-    // A(0,0)-(1,1)=4, B(0,2)-(1,3)=4, C(0,4)-(1,5)=4, D(0,6)-(1,7)=4,
-    // E(2,0)-(2,2)=3, F(2,3)-(3,5)=6, G(2,6)-(2,7)=2,
-    // H(3,0)-(3,2)=3, I(3,6)-(3,7)=2,
-    // J(4,0)-(5,1)=4, K(4,2)-(5,3)=4, L(4,4)-(5,5)=4, M(4,6)-(5,7)=4,
-    // N(6,0)-(7,1)=4, O(6,2)-(7,3)=4, P(6,4)-(7,5)=4, Q(6,6)-(7,7)=4
-  },
+// ── DIFFICULTY CONFIG ──
+// Easy:   small grids, large rects → few pieces, obvious solutions
+// Medium: medium grids, moderate rects → more pieces, moderate challenge
+// Hard:   large grids, small rects → many pieces, complex solutions
+const DIFFICULTIES: DifficultyConfig[] = [
+  { name: 'EASY',   minRows: 4, maxRows: 5,  minCols: 4, maxCols: 5,  maxRectW: 5, maxRectH: 5 },
+  { name: 'MEDIUM', minRows: 6, maxRows: 7,  minCols: 6, maxCols: 7,  maxRectW: 3, maxRectH: 3 },
+  { name: 'HARD',   minRows: 8, maxRows: 10, minCols: 8, maxCols: 10, maxRectW: 3, maxRectH: 3 },
 ];
+
+// ── SEEDED RNG ──
+// Produces a deterministic pseudo-random sequence from a numeric seed,
+// so the same difficulty+level always generates the same puzzle.
+function seededRandom(seed: number): () => number {
+  let s = (seed ^ 0xdeadbeef) >>> 0;
+  return () => {
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+    s ^= s >>> 16;
+    return (s >>> 0) / 0x100000000;
+  };
+}
+
+// ── LEVEL GENERATOR ──
+// Fills the grid row-by-row, placing random-sized rectangles that fit
+// without overlapping. A clue number is placed at the center of each
+// rectangle, which maximally constrains the solver.
+function generateShikaku(
+  rows: number, cols: number,
+  maxW: number, maxH: number,
+  rng: () => number,
+): LevelDef {
+  const grid = Array.from({ length: rows }, () => new Array<number>(cols).fill(-1));
+  const rects: { r1: number; c1: number; r2: number; c2: number }[] = [];
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (grid[r][c] !== -1) continue;
+
+      // Contiguous free cells to the right in this row
+      let availW = 0;
+      while (c + availW < cols && grid[r][c + availW] === -1) availW++;
+      const w = 1 + Math.floor(rng() * Math.min(availW, maxW));
+
+      // Rows downward where all w columns are free
+      let availH = 0;
+      for (let dr = 0; r + dr < rows; dr++) {
+        let ok = true;
+        for (let dc = 0; dc < w; dc++) {
+          if (grid[r + dr][c + dc] !== -1) { ok = false; break; }
+        }
+        if (!ok) break;
+        availH = dr + 1;
+      }
+      const h = 1 + Math.floor(rng() * Math.min(availH, maxH));
+
+      const id = rects.length;
+      for (let dr = 0; dr < h; dr++)
+        for (let dc = 0; dc < w; dc++)
+          grid[r + dr][c + dc] = id;
+
+      rects.push({ r1: r, c1: c, r2: r + h - 1, c2: c + w - 1 });
+    }
+  }
+
+  const clues: Clue[] = rects.map(rect => ({
+    row: Math.floor((rect.r1 + rect.r2) / 2),
+    col: Math.floor((rect.c1 + rect.c2) / 2),
+    value: (rect.r2 - rect.r1 + 1) * (rect.c2 - rect.c1 + 1),
+  }));
+
+  return { rows, cols, clues, label: `${rows}×${cols}` };
+}
+
+function buildLevel(diffIdx: number, lvlNum: number): LevelDef {
+  const diff = DIFFICULTIES[diffIdx];
+  const seed = diffIdx * 1000000 + lvlNum;
+  const rng  = seededRandom(seed);
+  const rows = diff.minRows + Math.floor(rng() * (diff.maxRows - diff.minRows + 1));
+  const cols = diff.minCols + Math.floor(rng() * (diff.maxCols - diff.minCols + 1));
+  return generateShikaku(rows, cols, diff.maxRectW, diff.maxRectH, rng);
+}
 
 // ── CANVAS SETUP ──
 const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
@@ -424,7 +438,9 @@ function sizeCanvas() {
 }
 
 // ── STATE ──
-let currentLevelIdx = 0;
+let difficultyIdx  = 0;
+let levelNumber    = 1;
+let currentLevel   = buildLevel(0, 1);
 let placedRects: Rect[] = [];
 let history: Rect[][] = [];
 let moves = 0;
@@ -434,51 +450,54 @@ let drag: DragState | null = null;
 let dragIsMove = false;
 let flashInvalid = 0;
 let winPulse = 0;
-let completedLevels = new Set<number>();
+let bestLevels = [0, 0, 0]; // highest completed level per difficulty index
 
 // ── PROGRESS PERSISTENCE ──
 function loadProgress() {
   try {
     const raw = localStorage.getItem('shikaku-progress');
     if (raw) {
-      const data = JSON.parse(raw) as { completed: number[] };
-      completedLevels = new Set(data.completed ?? []);
+      const data = JSON.parse(raw) as { bestLevels?: number[]; lastDiff?: number };
+      if (Array.isArray(data.bestLevels)) bestLevels = data.bestLevels;
+      if (typeof data.lastDiff === 'number' && data.lastDiff >= 0 && data.lastDiff < DIFFICULTIES.length) {
+        difficultyIdx = data.lastDiff;
+      }
     }
   } catch {}
+  // Resume at the next unsolved level for the restored difficulty
+  levelNumber = bestLevels[difficultyIdx] > 0 ? bestLevels[difficultyIdx] + 1 : 1;
+  currentLevel = buildLevel(difficultyIdx, levelNumber);
 }
 
 function saveProgress() {
   try {
-    localStorage.setItem('shikaku-progress', JSON.stringify({ completed: [...completedLevels] }));
+    localStorage.setItem('shikaku-progress', JSON.stringify({ bestLevels, lastDiff: difficultyIdx }));
   } catch {}
 }
 
 // ── GRID GEOMETRY ──
 function cellSize(): number {
-  const lv = LEVELS[currentLevelIdx];
   const pad = 24;
   return Math.max(1, Math.floor(Math.min(
-    (canvas.width  - pad * 2) / lv.cols,
-    (canvas.height - pad * 2) / lv.rows,
+    (canvas.width  - pad * 2) / currentLevel.cols,
+    (canvas.height - pad * 2) / currentLevel.rows,
   )));
 }
 
 function gridOffset(): { ox: number; oy: number } {
-  const lv = LEVELS[currentLevelIdx];
   const cs = cellSize();
   return {
-    ox: Math.floor((canvas.width  - cs * lv.cols) / 2),
-    oy: Math.floor((canvas.height - cs * lv.rows) / 2),
+    ox: Math.floor((canvas.width  - cs * currentLevel.cols) / 2),
+    oy: Math.floor((canvas.height - cs * currentLevel.rows) / 2),
   };
 }
 
 function cellFromPoint(px: number, py: number): { r: number; c: number } | null {
   const { ox, oy } = gridOffset();
   const cs = cellSize();
-  const lv = LEVELS[currentLevelIdx];
   const c = Math.floor((px - ox) / cs);
   const r = Math.floor((py - oy) / cs);
-  if (r < 0 || r >= lv.rows || c < 0 || c >= lv.cols) return null;
+  if (r < 0 || r >= currentLevel.rows || c < 0 || c >= currentLevel.cols) return null;
   return { r, c };
 }
 
@@ -505,22 +524,20 @@ function rectsOverlap(a: Rect, b: { r1: number; c1: number; r2: number; c2: numb
 }
 
 function validateRect(r1: number, c1: number, r2: number, c2: number): boolean {
-  const lv = LEVELS[currentLevelIdx];
   const area = (r2 - r1 + 1) * (c2 - c1 + 1);
-  const inside = lv.clues.filter(cl =>
+  const inside = currentLevel.clues.filter(cl =>
     cl.row >= r1 && cl.row <= r2 && cl.col >= c1 && cl.col <= c2,
   );
   return inside.length === 1 && area === inside[0].value;
 }
 
 function checkWin(): boolean {
-  const lv = LEVELS[currentLevelIdx];
-  const total = lv.rows * lv.cols;
+  const total = currentLevel.rows * currentLevel.cols;
   const covered = new Set<string>();
   for (const rect of placedRects) {
     const { r1, c1, r2, c2 } = rect;
     const area = (r2 - r1 + 1) * (c2 - c1 + 1);
-    const inside = lv.clues.filter(cl =>
+    const inside = currentLevel.clues.filter(cl =>
       cl.row >= r1 && cl.row <= r2 && cl.col >= c1 && cl.col <= c2,
     );
     if (inside.length !== 1 || area !== inside[0].value) return false;
@@ -557,7 +574,7 @@ const elLevel = document.getElementById('level-display')!;
 const elMoves = document.getElementById('moves-display')!;
 
 function updateHUD() {
-  elLevel.textContent = String(currentLevelIdx + 1);
+  elLevel.textContent = String(levelNumber);
   elMoves.textContent = String(moves);
 }
 
@@ -566,41 +583,52 @@ const overlay    = document.getElementById('overlay')!;
 const elTitle    = document.getElementById('overlay-title')!;
 const elMsg      = document.getElementById('overlay-message')!;
 const elBtn      = document.getElementById('overlay-btn')!;
-const levelBtns  = document.querySelectorAll<HTMLButtonElement>('.level-btn');
+const diffBtns   = document.querySelectorAll<HTMLButtonElement>('.diff-btn');
 const levelSel   = document.getElementById('level-select')!;
+const elDiffInfo = document.getElementById('diff-info')!;
 
-function showOverlay(title: string, msg: string, btn: string, showLevels = false) {
+function updateDiffInfo() {
+  const best = bestLevels[difficultyIdx];
+  elDiffInfo.textContent = best > 0 ? `Best: Level ${best}` : 'No levels completed yet';
+}
+
+function showOverlay(title: string, msg: string, btn: string, showDiffs = false) {
   overlay.classList.remove('hidden');
   elTitle.textContent = title;
   elMsg.textContent   = msg;
   elBtn.textContent   = btn;
-  levelSel.style.display = showLevels ? 'flex' : 'none';
-  refreshLevelBtns();
+  levelSel.style.display   = showDiffs ? 'flex' : 'none';
+  elDiffInfo.style.display = showDiffs ? 'block' : 'none';
+  refreshDiffBtns();
+  updateDiffInfo();
 }
 
 function hideOverlay() { overlay.classList.add('hidden'); }
 
-function refreshLevelBtns() {
-  levelBtns.forEach((btn, i) => {
-    btn.classList.toggle('active',    i === currentLevelIdx);
-    btn.classList.toggle('completed', completedLevels.has(i));
+function refreshDiffBtns() {
+  diffBtns.forEach((btn, i) => {
+    btn.classList.toggle('active', i === difficultyIdx);
   });
 }
 
-levelBtns.forEach(btn => {
+diffBtns.forEach(btn => {
   btn.addEventListener('click', () => {
-    currentLevelIdx = Number(btn.dataset.level);
-    refreshLevelBtns();
+    difficultyIdx = Number(btn.dataset.diff);
+    levelNumber   = bestLevels[difficultyIdx] > 0 ? bestLevels[difficultyIdx] + 1 : 1;
+    currentLevel  = buildLevel(difficultyIdx, levelNumber);
+    refreshDiffBtns();
+    updateDiffInfo();
+    updateHUD();
   });
 });
 
 elBtn.addEventListener('click', () => {
-  if (phase === 'menu' || phase === 'won') startLevel(currentLevelIdx);
+  if (phase === 'menu' || phase === 'won') startLevel();
 });
 
 // ── GAME FLOW ──
-function startLevel(idx: number) {
-  currentLevelIdx = idx;
+function startLevel() {
+  currentLevel = buildLevel(difficultyIdx, levelNumber);
   placedRects  = [];
   history      = [];
   moves        = 0;
@@ -615,18 +643,16 @@ function startLevel(idx: number) {
 function handleWin() {
   phase    = 'won';
   winPulse = 1;
-  completedLevels.add(currentLevelIdx);
+  bestLevels[difficultyIdx] = Math.max(bestLevels[difficultyIdx], levelNumber);
   saveProgress();
   soundWin();
-  const isLast = currentLevelIdx === LEVELS.length - 1;
-  const nextMsg = isLast
-    ? 'You solved all puzzles!'
-    : 'Well done! Ready for the next?';
-  if (!isLast) currentLevelIdx++;
+  const completed = levelNumber;
+  levelNumber++;
+  currentLevel = buildLevel(difficultyIdx, levelNumber);
   setTimeout(() => showOverlay(
     'SOLVED!',
-    `${nextMsg}\n\nPick a level or continue:`,
-    isLast ? 'PLAY AGAIN' : 'NEXT LEVEL',
+    `Level ${completed} complete!\nReady for level ${levelNumber}?`,
+    'NEXT LEVEL',
     true,
   ), 600);
 }
@@ -656,7 +682,6 @@ function onPointerUp(px: number, py: number) {
 
   if (!dragIsMove) {
     // Single-cell tap: remove existing rect, or place a 1×1 if there's a value=1 clue
-    const lv = LEVELS[currentLevelIdx];
     const existingIdx = placedRects.findIndex(rc =>
       r1 >= rc.r1 && r1 <= rc.r2 && c1 >= rc.c1 && c1 <= rc.c2,
     );
@@ -666,7 +691,7 @@ function onPointerUp(px: number, py: number) {
       moves++;
       updateHUD();
       soundUndo();
-    } else if (lv.clues.some(cl => cl.row === r1 && cl.col === c1 && cl.value === 1)) {
+    } else if (currentLevel.clues.some(cl => cl.row === r1 && cl.col === c1 && cl.value === 1)) {
       history.push(placedRects.map(r => ({ ...r })));
       placedRects.push({ r1, c1, r2: r1, c2: c1, colorIdx: colorCounter % PALETTE.length });
       colorCounter++;
@@ -731,15 +756,14 @@ function drawBackground() {
 }
 
 function drawGrid() {
-  const lv = LEVELS[currentLevelIdx];
   const cs = cellSize();
   const { ox, oy } = gridOffset();
-  const gw = cs * lv.cols;
-  const gh = cs * lv.rows;
+  const gw = cs * currentLevel.cols;
+  const gh = cs * currentLevel.rows;
 
   // Grid cell backgrounds
-  for (let r = 0; r < lv.rows; r++) {
-    for (let c = 0; c < lv.cols; c++) {
+  for (let r = 0; r < currentLevel.rows; r++) {
+    for (let c = 0; c < currentLevel.cols; c++) {
       const x = ox + c * cs;
       const y = oy + r * cs;
       ctx.fillStyle = (r + c) % 2 === 0 ? 'rgba(255,255,255,0.025)' : 'rgba(255,255,255,0.012)';
@@ -750,11 +774,11 @@ function drawGrid() {
   // Grid lines
   ctx.strokeStyle = 'rgba(255,255,255,0.18)';
   ctx.lineWidth   = 1;
-  for (let r = 0; r <= lv.rows; r++) {
+  for (let r = 0; r <= currentLevel.rows; r++) {
     const y = oy + r * cs;
     ctx.beginPath(); ctx.moveTo(ox, y); ctx.lineTo(ox + gw, y); ctx.stroke();
   }
-  for (let c = 0; c <= lv.cols; c++) {
+  for (let c = 0; c <= currentLevel.cols; c++) {
     const x = ox + c * cs;
     ctx.beginPath(); ctx.moveTo(x, oy); ctx.lineTo(x, oy + gh); ctx.stroke();
   }
@@ -824,7 +848,6 @@ function drawDragPreview() {
 }
 
 function drawClues() {
-  const lv = LEVELS[currentLevelIdx];
   const cs = cellSize();
   const { ox, oy } = gridOffset();
   const fontSize = Math.max(10, Math.round(cs * 0.42));
@@ -833,7 +856,7 @@ function drawClues() {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  for (const cl of lv.clues) {
+  for (const cl of currentLevel.clues) {
     const x = ox + cl.col * cs + cs / 2;
     const y = oy + cl.row * cs + cs / 2;
 
