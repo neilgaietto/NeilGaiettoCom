@@ -25,11 +25,11 @@ import Layout from '../layouts/Layout.astro';
         <div class="section-label">Grid</div>
         <div class="slider-row">
           <label>Columns <span id="colsDisplay">1</span></label>
-          <input type="range" id="colsSlider" min="1" max="16" value="1" step="1">
+          <input type="range" id="colsSlider" min="1" max="4096" value="1" step="1">
         </div>
         <div class="slider-row">
           <label>Rows <span id="rowsDisplay">1</span></label>
-          <input type="range" id="rowsSlider" min="1" max="16" value="1" step="1">
+          <input type="range" id="rowsSlider" min="1" max="4096" value="1" step="1">
         </div>
       </div>
 
@@ -49,7 +49,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="section-label">Timing</div>
         <div class="slider-row">
           <label>Speed <span id="speedDisplay">500</span>ms</label>
-          <input type="range" id="speedSlider" min="30" max="3000" value="500" step="10">
+          <input type="range" id="speedSlider" min="1" max="3000" value="500" step="1">
         </div>
         <div class="slider-row">
           <label>Duty <span id="dutyDisplay">50</span>%</label>
@@ -95,7 +95,7 @@ import Layout from '../layouts/Layout.astro';
           <label class="ov-check-label">
             <input type="checkbox" id="ov_speed" class="ov-check"> Speed <span id="bSpeedDisplay">500</span>ms
           </label>
-          <input type="range" id="bSpeed" min="30" max="3000" value="500" step="10">
+          <input type="range" id="bSpeed" min="1" max="3000" value="500" step="1">
         </div>
         <div class="ov-row ov-sl-row">
           <label class="ov-check-label">
@@ -469,7 +469,7 @@ function drawFrame(ts: number) {
 
       // Speed: noise maps each block to ¼x–4x base speed at full randomness
       const logN        = n * 2 - 1; // -1..1
-      const effectiveMs = Math.max(16, speed * Math.pow(2, logN * r * 2));
+      const effectiveMs = Math.max(1, speed * Math.pow(2, logN * r * 2));
 
       // Phase: position-based offset + per-block random jitter
       const posOff  = (col + row) * offset;
