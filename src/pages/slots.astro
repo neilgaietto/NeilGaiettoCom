@@ -1584,7 +1584,8 @@ import Layout from '../layouts/Layout.astro';
 
   function updateReels(dt: number, now: number) {
     let allIdle = true;
-    for (const r of reels) {
+    for (let i = 0; i < REELS; i++) {
+      const r = reels[i];
       if (r.state === 'spin') {
         allIdle = false;
         r.pos += r.vel * dt;
@@ -1599,6 +1600,10 @@ import Layout from '../layouts/Layout.astro';
           r.pos = r.to;
           r.vel = 0;
           r.state = 'idle';
+          // This reel now renders from `grid`, so it has to be read here rather than
+          // once every reel has landed — otherwise it shows the previous spin until
+          // the last reel stops, and the whole grid visibly swaps at that moment.
+          readReel(i);
           sfx.stop();
         }
       }
@@ -1611,12 +1616,15 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
+  function readReel(i: number) {
+    const r = reels[i];
+    const len = r.strip.length;
+    const p = Math.round(r.pos);
+    grid[i] = [0, 1, 2].map((j) => r.strip[mod(p - j, len)]);
+  }
+
   function readGrid() {
-    grid = reels.map((r) => {
-      const len = r.strip.length;
-      const p = Math.round(r.pos);
-      return [0, 1, 2].map((j) => r.strip[mod(p - j, len)]);
-    });
+    for (let i = 0; i < REELS; i++) readReel(i);
   }
 
   const anySpinning = () => reels.some((r) => r.state !== 'idle');
@@ -1686,14 +1694,15 @@ import Layout from '../layouts/Layout.astro';
 
       if (r.state === 'idle') {
         for (let j = 0; j < ROWS; j++) {
-          const id = grid[i][j];
+          const held = mode === 'free' && sticky[i][j];
+          const id = held ? 'wild' : grid[i][j];
           const win = winCells[i][j];
           const dim = shownWins.length > 0 && !win;
           drawTile(x, gy + j * ch, cw, ch, id, {
             dim,
             highlight: win ? pulse : 0,
             scale: win ? 1 + 0.04 * pulse : 1,
-            sticky: mode === 'free' && sticky[i][j],
+            sticky: held,
           });
           if (overclocked[i][j]) {
             ctx.save();
