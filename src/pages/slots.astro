@@ -65,10 +65,11 @@ import Layout from '../layouts/Layout.astro';
     </div>
 
     <!-- ── Paytable / help ── -->
-    <div id="ov-paytable" class="overlay hidden">
+    <div id="ov-paytable" class="overlay hidden" role="dialog" aria-modal="true"
+         aria-labelledby="paytable-heading" aria-hidden="true">
       <div class="sheet">
         <button class="sheet-close" id="paytable-close" aria-label="Close">×</button>
-        <h2>Paytable</h2>
+        <h2 id="paytable-heading">Paytable</h2>
         <p class="sheet-note">
           Pays are shown for 3 / 4 / 5 of a kind, left to right on a line,
           multiplied by the <b>line bet</b> (total bet ÷ 20).
@@ -116,9 +117,10 @@ import Layout from '../layouts/Layout.astro';
     </div>
 
     <!-- ── Pick bonus ── -->
-    <div id="ov-pick" class="overlay hidden">
+    <div id="ov-pick" class="overlay hidden" role="dialog" aria-modal="true"
+         aria-labelledby="pick-heading" aria-hidden="true">
       <div class="pick-panel">
-        <h2 class="pick-title">Prompt Engineering</h2>
+        <h2 class="pick-title" id="pick-heading">Prompt Engineering</h2>
         <p class="pick-sub" id="pick-sub">Pick a prompt. Four crashes end the run.</p>
         <div class="pick-meta">
           <div class="pick-stat"><span>Collected</span><b id="pick-total">0</b></div>
@@ -138,7 +140,8 @@ import Layout from '../layouts/Layout.astro';
     </div>
 
     <!-- ── Generic feature modal ── -->
-    <div id="ov-modal" class="overlay hidden">
+    <div id="ov-modal" class="overlay hidden" role="dialog" aria-modal="true"
+         aria-labelledby="modal-title" aria-hidden="true">
       <div class="modal-card">
         <div class="modal-kicker" id="modal-kicker"></div>
         <h2 class="modal-title" id="modal-title"></h2>
@@ -151,10 +154,23 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style is:global>
+  html {
+    background: #05030f;
+  }
+
+  /* The cabinet is a dark neon object, so it sits on a dark room rather than the
+     site's photo backdrop. */
   body {
     align-items: stretch !important;
     justify-content: stretch !important;
     padding: 0;
+    background-color: #05030f !important;
+    background-image:
+      radial-gradient(ellipse 90% 55% at 50% -8%, rgba(124, 58, 237, 0.34), transparent 70%),
+      radial-gradient(ellipse 65% 45% at 8% 100%, rgba(34, 211, 238, 0.16), transparent 70%),
+      radial-gradient(ellipse 65% 45% at 92% 92%, rgba(236, 72, 153, 0.16), transparent 70%),
+      linear-gradient(180deg, #0a0618 0%, #05030f 55%, #09051c 100%) !important;
+    background-attachment: fixed !important;
   }
 
   .slot-page {
@@ -1443,7 +1459,7 @@ import Layout from '../layouts/Layout.astro';
       const d = JSON.parse(raw);
       if (typeof d.balance === 'number' && isFinite(d.balance)) balance = Math.max(0, Math.floor(d.balance));
       if (typeof d.betIdx === 'number' && d.betIdx >= 0 && d.betIdx < BETS.length) betIdx = d.betIdx;
-      if (typeof d.bestWin === 'number') bestWin = d.bestWin;
+      if (typeof d.bestWin === 'number' && isFinite(d.bestWin)) bestWin = Math.max(0, Math.floor(d.bestWin));
       if (typeof d.soundOn === 'boolean') soundOn = d.soundOn;
       if (typeof d.turbo === 'boolean') turbo = d.turbo;
       if (d.jpMult) {
@@ -1494,6 +1510,27 @@ import Layout from '../layouts/Layout.astro';
     if (html === null) { elFeatureBar.classList.add('hidden'); return; }
     elFeatureBar.innerHTML = html;
     elFeatureBar.classList.remove('hidden');
+  }
+
+  // ── OVERLAYS ──
+  // Shown/hidden through here so aria-hidden tracks visibility and focus lands on the
+  // overlay's primary control, then returns to whatever opened it.
+  let overlayReturnFocus: HTMLElement | null = null;
+
+  function setOverlay(node: HTMLElement, show: boolean, focusEl?: HTMLElement | null) {
+    if (show) {
+      const active = document.activeElement as HTMLElement | null;
+      if (active && active !== document.body) overlayReturnFocus = active;
+      node.classList.remove('hidden');
+      node.setAttribute('aria-hidden', 'false');
+      focusEl?.focus();
+    } else {
+      node.classList.add('hidden');
+      node.setAttribute('aria-hidden', 'true');
+      const back = overlayReturnFocus;
+      overlayReturnFocus = null;
+      if (back && document.contains(back)) back.focus();
+    }
   }
 
   // ── TIMING HELPERS ──
@@ -2111,11 +2148,11 @@ import Layout from '../layouts/Layout.astro';
     }
     const btn = el<HTMLButtonElement>('modal-btn');
     btn.textContent = o.btn || 'CONTINUE';
-    elModal.classList.remove('hidden');
+    setOverlay(elModal, true, btn);
     return new Promise<void>((res) => {
       const done = () => {
         btn.removeEventListener('click', done);
-        elModal.classList.add('hidden');
+        setOverlay(elModal, false);
         sfx.click();
         res();
       };
@@ -2228,13 +2265,20 @@ import Layout from '../layouts/Layout.astro';
     await p;
   }
 
-  function applyStickyWilds() {
+  /** Pins this spin's wilds in place. Returns true only when a wild is newly pinned. */
+  function applyStickyWilds(): boolean {
+    let added = false;
     for (let i = 0; i < REELS; i++) {
       for (let j = 0; j < ROWS; j++) {
-        if (grid[i][j] === 'wild') sticky[i][j] = true;
-        else if (sticky[i][j]) grid[i][j] = 'wild';
+        if (grid[i][j] === 'wild') {
+          if (!sticky[i][j]) added = true;
+          sticky[i][j] = true;
+        } else if (sticky[i][j]) {
+          grid[i][j] = 'wild';
+        }
       }
     }
+    return added;
   }
 
   /** One full spin: animate, apply modifiers, pay wins. Returns the evaluation. */
@@ -2246,11 +2290,7 @@ import Layout from '../layouts/Layout.astro';
 
     await spinReelsOnce();
 
-    if (isFree) {
-      applyStickyWilds();
-      const anyNew = sticky.some((col) => col.some(Boolean));
-      if (anyNew) sfx.coin();
-    }
+    if (isFree && applyStickyWilds()) sfx.coin();
 
     let ev = evaluate(grid);
 
@@ -2490,7 +2530,7 @@ import Layout from '../layouts/Layout.astro';
 
     sfx.feature();
     say('Prompt Engineering bonus!', true);
-    ov.classList.remove('hidden');
+    setOverlay(ov, true, nodes[0]);
 
     return new Promise<void>((resolve) => {
       const revealNode = (n: HTMLButtonElement, tile: PickTile, spent: boolean) => {
@@ -2507,10 +2547,11 @@ import Layout from '../layouts/Layout.astro';
         nodes.forEach((n, i) => { if (!n.classList.contains('revealed')) revealNode(n, tiles[i], true); });
         el('pick-sub').textContent = 'Run terminated — collect your tokens.';
         btnDone.classList.remove('hidden');
+        btnDone.focus();
         const total = collected * mult;
         const onDone = () => {
           btnDone.removeEventListener('click', onDone);
-          ov.classList.add('hidden');
+          setOverlay(ov, false);
           balance += total;
           if (total > bestWin) bestWin = total;
           updateHUD();
@@ -2838,14 +2879,14 @@ import Layout from '../layouts/Layout.astro';
   const elPaytable = el('ov-paytable');
   el('btn-paytable').addEventListener('click', () => {
     sfx.click();
-    elPaytable.classList.remove('hidden');
+    setOverlay(elPaytable, true, el('paytable-close'));
   });
   el('paytable-close').addEventListener('click', () => {
     sfx.click();
-    elPaytable.classList.add('hidden');
+    setOverlay(elPaytable, false);
   });
   elPaytable.addEventListener('click', (e) => {
-    if (e.target === elPaytable) elPaytable.classList.add('hidden');
+    if (e.target === elPaytable) setOverlay(elPaytable, false);
   });
 
   el('btn-reset-progress').addEventListener('click', () => {
@@ -2857,7 +2898,7 @@ import Layout from '../layouts/Layout.astro';
     updateHUD();
     save();
     say('Progress reset — 10,000 fresh tokens');
-    elPaytable.classList.add('hidden');
+    setOverlay(elPaytable, false);
   });
 
   canvas.addEventListener('click', () => {
@@ -2875,7 +2916,7 @@ import Layout from '../layouts/Layout.astro';
     else if (e.key === 'ArrowDown') { elBetDown.click(); }
     else if (e.key.toLowerCase() === 't') { elTurbo.click(); }
     else if (e.key === 'Escape') {
-      elPaytable.classList.add('hidden');
+      if (!elPaytable.classList.contains('hidden')) setOverlay(elPaytable, false);
       autoSpins = 0;
       updateHUD();
     }
@@ -2888,7 +2929,11 @@ import Layout from '../layouts/Layout.astro';
   });
 
   // ── INIT ──
-  const firstVisit = !localStorage.getItem(SAVE_KEY);
+  // localStorage access itself can throw (blocked cookies, some private modes), so this
+  // has to be guarded the same way save()/load() are.
+  const firstVisit = (() => {
+    try { return !localStorage.getItem(SAVE_KEY); } catch { return true; }
+  })();
   load();
   sizeCanvas();
   readGrid();
