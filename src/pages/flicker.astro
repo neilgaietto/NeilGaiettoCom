@@ -1,0 +1,746 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Flicker — NeilGaietto.com"
+  description="Full-screen configurable flicker and strobe effect with grid block controls."
+>
+  <div id="root">
+    <canvas id="canvas"></canvas>
+    <a href="/demos" id="back">← back</a>
+
+    <button id="settingsBtn" aria-label="Open settings" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+
+    <!-- Global settings panel -->
+    <div id="settingsPanel" role="dialog" aria-label="Settings" aria-hidden="true">
+      <div class="panel-hdr"><span class="panel-title">Settings</span></div>
+
+      <div class="panel-section">
+        <div class="section-label">Grid</div>
+        <div class="slider-row">
+          <label>Columns <span id="colsDisplay">1</span></label>
+          <input type="range" id="colsSlider" min="1" max="4096" value="1" step="1">
+        </div>
+        <div class="slider-row">
+          <label>Rows <span id="rowsDisplay">1</span></label>
+          <input type="range" id="rowsSlider" min="1" max="4096" value="1" step="1">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">Colors</div>
+        <div class="color-row">
+          <label>Color A</label>
+          <input type="color" id="colorA" value="#000000">
+        </div>
+        <div class="color-row">
+          <label>Color B</label>
+          <input type="color" id="colorB" value="#ffffff">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">Timing</div>
+        <div class="slider-row">
+          <label>Speed <span id="speedDisplay">500</span>ms</label>
+          <input type="range" id="speedSlider" min="1" max="3000" value="500" step="1">
+        </div>
+        <div class="slider-row">
+          <label>Duty <span id="dutyDisplay">50</span>%</label>
+          <input type="range" id="dutySlider" min="1" max="99" value="50" step="1">
+        </div>
+        <div class="slider-row">
+          <label>Randomness <span id="randomnessDisplay">0</span></label>
+          <input type="range" id="randomnessSlider" min="0" max="100" value="0" step="1">
+        </div>
+        <div class="slider-row">
+          <label>Offset <span id="offsetDisplay">0</span>ms</label>
+          <input type="range" id="offsetSlider" min="0" max="1000" value="0" step="5">
+        </div>
+      </div>
+    </div>
+
+    <!-- Per-block override panel -->
+    <div id="blockPanel" role="dialog" aria-label="Block Settings" aria-hidden="true">
+      <div class="panel-hdr">
+        <span class="panel-title" id="blockPanelTitle">Block (1, 1)</span>
+        <button id="closeBlockBtn" class="icon-btn" aria-label="Close">×</button>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">Colors</div>
+        <div class="ov-row">
+          <label class="ov-check-label">
+            <input type="checkbox" id="ov_colorA" class="ov-check"> Color A
+          </label>
+          <input type="color" id="bColorA" value="#000000">
+        </div>
+        <div class="ov-row">
+          <label class="ov-check-label">
+            <input type="checkbox" id="ov_colorB" class="ov-check"> Color B
+          </label>
+          <input type="color" id="bColorB" value="#ffffff">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">Timing</div>
+        <div class="ov-row ov-sl-row">
+          <label class="ov-check-label">
+            <input type="checkbox" id="ov_speed" class="ov-check"> Speed <span id="bSpeedDisplay">500</span>ms
+          </label>
+          <input type="range" id="bSpeed" min="1" max="3000" value="500" step="1">
+        </div>
+        <div class="ov-row ov-sl-row">
+          <label class="ov-check-label">
+            <input type="checkbox" id="ov_duty" class="ov-check"> Duty <span id="bDutyDisplay">50</span>%
+          </label>
+          <input type="range" id="bDuty" min="1" max="99" value="50" step="1">
+        </div>
+        <div class="ov-row ov-sl-row">
+          <label class="ov-check-label">
+            <input type="checkbox" id="ov_randomness" class="ov-check"> Randomness <span id="bRandomnessDisplay">0</span>
+          </label>
+          <input type="range" id="bRandomness" min="0" max="100" value="0" step="1">
+        </div>
+        <div class="ov-row ov-sl-row">
+          <label class="ov-check-label">
+            <input type="checkbox" id="ov_offset" class="ov-check"> Offset <span id="bOffsetDisplay">0</span>ms
+          </label>
+          <input type="range" id="bOffset" min="0" max="1000" value="0" step="5">
+        </div>
+      </div>
+
+      <button id="clearBlockBtn" class="clear-btn">Clear All Overrides</button>
+    </div>
+
+    <div id="hint">Double-click a block to customize it</div>
+  </div>
+</Layout>
+
+<style is:global>
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background-image: none !important;
+    background-color: #000 !important;
+    display: block !important;
+    min-height: unset !important;
+  }
+</style>
+
+<style>
+  #root {
+    position: fixed;
+    inset: 0;
+    user-select: none;
+  }
+
+  #canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  #back {
+    position: absolute;
+    bottom: 18px;
+    left: 20px;
+    color: rgba(255,255,255,0.35);
+    font-size: 13px;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color 0.2s;
+    z-index: 10;
+  }
+  #back:hover { color: rgba(255,255,255,0.8); }
+
+  #settingsBtn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(8px);
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  #settingsBtn:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.4);
+  }
+  #settingsBtn svg { width: 18px; height: 18px; }
+
+  #settingsPanel,
+  #blockPanel {
+    position: absolute;
+    width: 236px;
+    background: rgba(10,10,14,0.92);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 12px 14px 14px;
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    max-height: calc(100vh - 88px);
+    overflow-y: auto;
+  }
+  #settingsPanel.open,
+  #blockPanel.open { display: flex; }
+
+  #settingsPanel {
+    top: 68px;
+    right: 16px;
+  }
+
+  .panel-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .icon-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0 2px;
+    transition: color 0.15s;
+  }
+  .icon-btn:hover { color: rgba(255,255,255,0.8); }
+
+  .panel-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+  }
+
+  .color-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .color-row label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    flex: 1;
+  }
+  .color-row input[type="color"] {
+    width: 32px;
+    height: 22px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
+    padding: 1px;
+  }
+
+  .slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .slider-row label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .slider-row label span {
+    color: rgba(255,255,255,0.75);
+    min-width: 40px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .slider-row input[type="range"],
+  .ov-sl-row input[type="range"] {
+    width: 100%;
+    accent-color: rgba(255,255,255,0.7);
+    cursor: pointer;
+  }
+
+  /* Block panel override controls */
+  .ov-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ov-sl-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 3px;
+  }
+  .ov-check-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    flex: 1;
+  }
+  .ov-check-label span {
+    color: rgba(255,255,255,0.55);
+    font-variant-numeric: tabular-nums;
+    margin-left: 2px;
+    transition: color 0.15s;
+  }
+  .ov-check {
+    width: 13px;
+    height: 13px;
+    cursor: pointer;
+    accent-color: #ffd700;
+    flex-shrink: 0;
+  }
+  .ov-row input[type="color"],
+  .ov-sl-row input[type="range"] {
+    opacity: 0.28;
+    pointer-events: none;
+    transition: opacity 0.15s;
+  }
+  .ov-row.active .ov-check-label span { color: rgba(255,255,255,0.85); }
+  .ov-row.active input[type="color"],
+  .ov-row.active input[type="range"] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .ov-row input[type="color"] {
+    width: 32px;
+    height: 22px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    background: none;
+    padding: 1px;
+  }
+  .ov-sl-row input[type="range"] {
+    accent-color: #ffd700;
+  }
+
+  .clear-btn {
+    font-size: 11px;
+    padding: 6px 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    background: transparent;
+    color: rgba(255,255,255,0.45);
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+  }
+  .clear-btn:hover {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.8);
+  }
+
+  #hint {
+    position: absolute;
+    bottom: 48px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    background: rgba(0,0,0,0.52);
+    backdrop-filter: blur(6px);
+    padding: 6px 16px;
+    border-radius: 20px;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 1.2s ease;
+    z-index: 10;
+    white-space: nowrap;
+  }
+  #hint.hidden { opacity: 0; }
+</style>
+
+<script>
+// ===== TYPES =====
+interface GlobalSettings {
+  cols:       number;
+  rows:       number;
+  colorA:     string;
+  colorB:     string;
+  speed:      number; // ms per cycle
+  duty:       number; // 1-99 (% time in colorA)
+  randomness: number; // 0-100
+  offset:     number; // ms per (col+row) index step
+}
+
+type OvKey = 'colorA' | 'colorB' | 'speed' | 'duty' | 'randomness' | 'offset';
+
+interface BlockOverride {
+  colorA?:     string;
+  colorB?:     string;
+  speed?:      number;
+  duty?:       number;
+  randomness?: number;
+  offset?:     number;
+}
+
+// ===== STATE =====
+const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+const ctx    = canvas.getContext('2d')!;
+
+const gs: GlobalSettings = {
+  cols: 1, rows: 1,
+  colorA: '#000000', colorB: '#ffffff',
+  speed: 500, duty: 50, randomness: 0, offset: 0,
+};
+
+let noise       = new Float32Array(0);
+const overrides = new Map<number, BlockOverride>();
+let rafId       = 0;
+let activeBlock = -1; // block index currently open in blockPanel
+
+// ===== PRNG (stable noise per block index) =====
+function seededRand(seed: number): number {
+  const s = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
+  return s - Math.floor(s);
+}
+
+// ===== GRID =====
+function rebuildNoise() {
+  const total = gs.cols * gs.rows;
+  const next  = new Float32Array(total);
+  for (let i = 0; i < total; i++) next[i] = seededRand(i * 17 + 3);
+  noise = next;
+}
+
+// ===== RENDER =====
+// Uses requestAnimationFrame for the highest available refresh rate.
+// Each block's cycle phase is computed from the rAF timestamp so
+// rendering is decoupled from arbitrary timeouts.
+function drawFrame(ts: number) {
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const { cols, rows } = gs;
+  const bW = W / cols;
+  const bH = H / rows;
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const idx = row * cols + col;
+      const ov  = overrides.get(idx);
+
+      const colorA     = ov?.colorA     ?? gs.colorA;
+      const colorB     = ov?.colorB     ?? gs.colorB;
+      const speed      = ov?.speed      ?? gs.speed;
+      const duty       = ov?.duty       ?? gs.duty;
+      const randomness = ov?.randomness ?? gs.randomness;
+      const offset     = ov?.offset     ?? gs.offset;
+
+      const n  = noise[idx] ?? 0.5;
+      const r  = randomness / 100; // 0..1
+
+      // Speed: noise maps each block to ¼x–4x base speed at full randomness
+      const logN        = n * 2 - 1; // -1..1
+      const effectiveMs = Math.max(1, speed * Math.pow(2, logN * r * 2));
+
+      // Phase: position-based offset + per-block random jitter
+      const posOff  = (col + row) * offset;
+      const randOff = n * effectiveMs * r;
+      const t       = ((ts + posOff + randOff) % effectiveMs + effectiveMs) % effectiveMs;
+      const phase   = t / effectiveMs; // 0..1
+
+      const x1 = Math.round(col * bW);
+      const y1 = Math.round(row * bH);
+      const x2 = Math.round((col + 1) * bW);
+      const y2 = Math.round((row + 1) * bH);
+
+      ctx.fillStyle = phase < duty / 100 ? colorA : colorB;
+      ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+    }
+  }
+
+  rafId = requestAnimationFrame(drawFrame);
+}
+
+// ===== RESIZE =====
+function resize() {
+  const dpr     = window.devicePixelRatio || 1;
+  canvas.width  = Math.round(window.innerWidth  * dpr);
+  canvas.height = Math.round(window.innerHeight * dpr);
+  canvas.style.width  = window.innerWidth  + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+// ===== SETTINGS PANEL =====
+const settingsBtn   = document.getElementById('settingsBtn')!;
+const settingsPanel = document.getElementById('settingsPanel')!;
+
+settingsBtn.addEventListener('click', () => {
+  const opening = !settingsPanel.classList.contains('open');
+  settingsPanel.classList.toggle('open');
+  settingsBtn.setAttribute('aria-expanded', String(opening));
+  settingsPanel.setAttribute('aria-hidden',  String(!opening));
+  if (opening) closeBlockPanel();
+});
+
+// ===== GLOBAL SETTINGS BINDINGS =====
+function bindSlider(
+  sliderId: string, displayId: string, unit: string,
+  setter: (n: number) => void
+) {
+  const slider  = document.getElementById(sliderId)  as HTMLInputElement;
+  const display = document.getElementById(displayId)!;
+  slider.addEventListener('input', () => {
+    const v = Number(slider.value);
+    display.textContent = v + unit;
+    setter(v);
+  });
+}
+
+function bindColor(id: string, setter: (v: string) => void) {
+  (document.getElementById(id) as HTMLInputElement)
+    .addEventListener('input', (e) => setter((e.target as HTMLInputElement).value));
+}
+
+bindSlider('colsSlider',        'colsDisplay',        '',   (v) => { gs.cols       = v; rebuildNoise(); });
+bindSlider('rowsSlider',        'rowsDisplay',        '',   (v) => { gs.rows       = v; rebuildNoise(); });
+bindSlider('speedSlider',       'speedDisplay',       'ms', (v) => { gs.speed      = v; });
+bindSlider('dutySlider',        'dutyDisplay',        '%',  (v) => { gs.duty       = v; });
+bindSlider('randomnessSlider',  'randomnessDisplay',  '',   (v) => { gs.randomness = v; });
+bindSlider('offsetSlider',      'offsetDisplay',      'ms', (v) => { gs.offset     = v; });
+bindColor('colorA', (v) => { gs.colorA = v; });
+bindColor('colorB', (v) => { gs.colorB = v; });
+
+// ===== BLOCK PANEL =====
+const blockPanel      = document.getElementById('blockPanel')!;
+const blockPanelTitle = document.getElementById('blockPanelTitle')!;
+
+function blockIdx(col: number, row: number) { return row * gs.cols + col; }
+
+function openBlockPanel(col: number, row: number, cx: number, cy: number) {
+  activeBlock = blockIdx(col, row);
+  blockPanelTitle.textContent = `Block (${col + 1}, ${row + 1})`;
+  populateBlockPanel(overrides.get(activeBlock) ?? {});
+
+  // Position near click, keeping panel on screen
+  const PW = 250, PH = 400;
+  const W  = window.innerWidth, H = window.innerHeight;
+  let x = cx + 14;
+  let y = cy;
+  if (x + PW > W - 8) x = cx - PW - 14;
+  if (y + PH > H - 8) y = H - PH - 8;
+  if (x < 8) x = 8;
+  if (y < 8) y = 8;
+  blockPanel.style.left = x + 'px';
+  blockPanel.style.top  = y + 'px';
+
+  blockPanel.classList.add('open');
+  blockPanel.setAttribute('aria-hidden', 'false');
+
+  settingsPanel.classList.remove('open');
+  settingsBtn.setAttribute('aria-expanded', 'false');
+}
+
+function closeBlockPanel() {
+  activeBlock = -1;
+  blockPanel.classList.remove('open');
+  blockPanel.setAttribute('aria-hidden', 'true');
+}
+
+function setOvColorField(checkId: string, inputId: string, value: string, active: boolean) {
+  const check = document.getElementById(checkId) as HTMLInputElement;
+  const input = document.getElementById(inputId) as HTMLInputElement;
+  check.checked = active;
+  input.value   = value;
+  (check.closest('.ov-row') as HTMLElement).classList.toggle('active', active);
+}
+
+function setOvSliderField(
+  checkId: string, sliderId: string, displayId: string,
+  value: number, active: boolean, unit: string
+) {
+  const check   = document.getElementById(checkId)  as HTMLInputElement;
+  const slider  = document.getElementById(sliderId) as HTMLInputElement;
+  const display = document.getElementById(displayId)!;
+  check.checked        = active;
+  slider.value         = String(value);
+  display.textContent  = value + unit;
+  (check.closest('.ov-row') as HTMLElement).classList.toggle('active', active);
+}
+
+function populateBlockPanel(ov: BlockOverride) {
+  setOvColorField('ov_colorA', 'bColorA', ov.colorA ?? gs.colorA, ov.colorA != null);
+  setOvColorField('ov_colorB', 'bColorB', ov.colorB ?? gs.colorB, ov.colorB != null);
+  setOvSliderField('ov_speed',      'bSpeed',      'bSpeedDisplay',      ov.speed      ?? gs.speed,      ov.speed      != null, 'ms');
+  setOvSliderField('ov_duty',       'bDuty',       'bDutyDisplay',       ov.duty       ?? gs.duty,       ov.duty       != null, '%');
+  setOvSliderField('ov_randomness', 'bRandomness', 'bRandomnessDisplay', ov.randomness ?? gs.randomness, ov.randomness != null, '');
+  setOvSliderField('ov_offset',     'bOffset',     'bOffsetDisplay',     ov.offset     ?? gs.offset,     ov.offset     != null, 'ms');
+}
+
+function getOrCreateOv(): BlockOverride {
+  const ov = overrides.get(activeBlock) ?? {};
+  overrides.set(activeBlock, ov);
+  return ov;
+}
+
+function removeOvKey(key: OvKey) {
+  const ov = overrides.get(activeBlock);
+  if (!ov) return;
+  delete ov[key];
+  if (Object.keys(ov).length === 0) overrides.delete(activeBlock);
+}
+
+function bindOvColor(checkId: string, inputId: string, key: OvKey) {
+  const check = document.getElementById(checkId) as HTMLInputElement;
+  const input = document.getElementById(inputId) as HTMLInputElement;
+  const row   = check.closest('.ov-row') as HTMLElement;
+
+  check.addEventListener('change', () => {
+    row.classList.toggle('active', check.checked);
+    if (activeBlock < 0) return;
+    if (check.checked) { getOrCreateOv()[key] = input.value as any; }
+    else               { removeOvKey(key); }
+  });
+
+  input.addEventListener('input', () => {
+    if (activeBlock < 0) return;
+    getOrCreateOv()[key] = input.value as any;
+    if (!check.checked) { check.checked = true; row.classList.add('active'); }
+  });
+}
+
+function bindOvSlider(
+  checkId: string, sliderId: string, displayId: string,
+  key: OvKey, unit: string
+) {
+  const check   = document.getElementById(checkId)  as HTMLInputElement;
+  const slider  = document.getElementById(sliderId) as HTMLInputElement;
+  const display = document.getElementById(displayId)!;
+  const row     = check.closest('.ov-row') as HTMLElement;
+
+  check.addEventListener('change', () => {
+    row.classList.toggle('active', check.checked);
+    if (activeBlock < 0) return;
+    if (check.checked) { getOrCreateOv()[key] = Number(slider.value) as any; }
+    else               { removeOvKey(key); }
+  });
+
+  slider.addEventListener('input', () => {
+    const v = Number(slider.value);
+    display.textContent = v + unit;
+    if (activeBlock < 0) return;
+    getOrCreateOv()[key] = v as any;
+    if (!check.checked) { check.checked = true; row.classList.add('active'); }
+  });
+}
+
+bindOvColor('ov_colorA', 'bColorA', 'colorA');
+bindOvColor('ov_colorB', 'bColorB', 'colorB');
+bindOvSlider('ov_speed',      'bSpeed',      'bSpeedDisplay',      'speed',      'ms');
+bindOvSlider('ov_duty',       'bDuty',       'bDutyDisplay',       'duty',       '%');
+bindOvSlider('ov_randomness', 'bRandomness', 'bRandomnessDisplay', 'randomness', '');
+bindOvSlider('ov_offset',     'bOffset',     'bOffsetDisplay',     'offset',     'ms');
+
+document.getElementById('closeBlockBtn')!.addEventListener('click', closeBlockPanel);
+
+document.getElementById('clearBlockBtn')!.addEventListener('click', () => {
+  if (activeBlock < 0) return;
+  overrides.delete(activeBlock);
+  populateBlockPanel({});
+});
+
+// ===== CLICK-OUTSIDE DISMISS =====
+document.addEventListener('pointerdown', (e) => {
+  const t = e.target as Node;
+  const inSettings = settingsPanel.contains(t) || settingsBtn.contains(t);
+  const inBlock    = blockPanel.contains(t);
+
+  if (!inSettings) {
+    settingsPanel.classList.remove('open');
+    settingsBtn.setAttribute('aria-expanded', 'false');
+    settingsPanel.setAttribute('aria-hidden', 'true');
+  }
+  if (!inBlock && !inSettings) {
+    closeBlockPanel();
+  }
+});
+
+// ===== DOUBLE-CLICK / DOUBLE-TAP TO OPEN BLOCK PANEL =====
+let lastTapBlock = -1;
+let lastTapTime  = 0;
+
+function handleTap(clientX: number, clientY: number) {
+  const col = Math.min(gs.cols - 1, Math.floor(clientX / (window.innerWidth  / gs.cols)));
+  const row = Math.min(gs.rows - 1, Math.floor(clientY / (window.innerHeight / gs.rows)));
+  const idx = blockIdx(col, row);
+  const now = Date.now();
+
+  if (idx === lastTapBlock && now - lastTapTime < 400) {
+    openBlockPanel(col, row, clientX, clientY);
+    lastTapBlock = -1;
+  } else {
+    lastTapBlock = idx;
+    lastTapTime  = now;
+  }
+}
+
+canvas.addEventListener('click', (e) => {
+  if (blockPanel.contains(e.target as Node)) return;
+  if (settingsPanel.contains(e.target as Node)) return;
+  if (settingsBtn.contains(e.target as Node)) return;
+  handleTap(e.clientX, e.clientY);
+});
+
+canvas.addEventListener('touchend', (e) => {
+  if (blockPanel.contains(e.target as Node)) return;
+  const t = e.changedTouches[0];
+  handleTap(t.clientX, t.clientY);
+}, { passive: true });
+
+// ===== HINT =====
+const hint = document.getElementById('hint')!;
+if ('ontouchstart' in window) {
+  hint.textContent = 'Double-tap a block to customize it';
+}
+setTimeout(() => hint.classList.add('hidden'), 4500);
+
+// ===== INIT =====
+window.addEventListener('resize', () => {
+  cancelAnimationFrame(rafId);
+  resize();
+  rafId = requestAnimationFrame(drawFrame);
+});
+
+rebuildNoise();
+resize();
+rafId = requestAnimationFrame(drawFrame);
+</script>
