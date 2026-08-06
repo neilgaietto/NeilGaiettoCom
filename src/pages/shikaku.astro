@@ -474,7 +474,7 @@ function loadProgress() {
       // Sanitize bestLevels: must be array of non-negative finite integers, padded/truncated to DIFFICULTIES.length
       if (Array.isArray(data.bestLevels)) {
         bestLevels = Array.from({ length: DIFFICULTIES.length }, (_, i) => {
-          const v = Number(data.bestLevels![i]);
+          const v = Number((data.bestLevels as unknown[])[i]);
           return Number.isFinite(v) && v >= 0 ? Math.floor(v) : 0;
         });
       }

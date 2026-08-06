@@ -8,7 +8,7 @@ interface Props {
 }
 
 const { title, description, includeSchema = false } = Astro.props;
-const GA4_ID = 'G-XXXXXXXXXX'; // Replace with your real GA4 Measurement ID
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!doctype html>
@@ -18,18 +18,20 @@ const GA4_ID = 'G-XXXXXXXXXX'; // Replace with your real GA4 Measurement ID
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title}</title>
     <meta name="description" content={description}>
+    <link rel="canonical" href={canonicalURL}>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
     <!-- Open Graph -->
     <meta property="og:title" content={title}>
-    <meta property="og:description" content="Software Architect and Developer based in Apex, NC.">
+    <meta property="og:description" content={description}>
     <meta property="og:image" content="https://neilgaietto.com/assets/neil.jpg">
-    <meta property="og:url" content="https://neilgaietto.com">
+    <meta property="og:url" content={canonicalURL}>
     <meta property="og:type" content="website">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content={title}>
-    <meta name="twitter:description" content="Software Architect and Developer based in Apex, NC.">
+    <meta name="twitter:description" content={description}>
     <meta name="twitter:image" content="https://neilgaietto.com/assets/neil.jpg">
 
     {includeSchema && (
@@ -55,15 +57,9 @@ const GA4_ID = 'G-XXXXXXXXXX'; // Replace with your real GA4 Measurement ID
       })} />
     )}
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Maitree&display=swap" rel="stylesheet">
-    <!-- Google Analytics 4 -->
-    <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`}></script>
-    <script define:vars={{ GA4_ID }}>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { dataLayer.push(arguments); }
-      gtag('js', new Date());
-      gtag('config', GA4_ID);
-    </script>
 </head>
 <body>
     <slot />
