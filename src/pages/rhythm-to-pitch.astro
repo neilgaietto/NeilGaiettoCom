@@ -1,0 +1,1470 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Just-intonation intervals, ordered by size. `num/den` multiplies voice A's
+// frequency to get voice B's.
+const RATIOS = [
+  { label: 'Unison',        short: '1:1', num: 1, den: 1 },
+  { label: 'Major 2nd',     short: '9:8', num: 9, den: 8 },
+  { label: 'Minor 3rd',     short: '6:5', num: 6, den: 5 },
+  { label: 'Major 3rd',     short: '5:4', num: 5, den: 4 },
+  { label: 'Perfect 4th',   short: '4:3', num: 4, den: 3 },
+  { label: 'Perfect 5th',   short: '3:2', num: 3, den: 2 },
+  { label: 'Minor 6th',     short: '8:5', num: 8, den: 5 },
+  { label: 'Major 6th',     short: '5:3', num: 5, den: 3 },
+  { label: 'Octave',        short: '2:1', num: 2, den: 1 },
+];
+
+const FREQ_PRESETS = [
+  { label: 'Slow polyrhythm', sub: '2 Hz',   hz: 2 },
+  { label: 'Flutter',         sub: '18 Hz',  hz: 18 },
+  { label: 'Low bass',        sub: 'A2 · 110 Hz', hz: 110 },
+  { label: 'Middle tone',     sub: 'A3 · 220 Hz', hz: 220 },
+];
+
+// The slider maps 1 Hz → 440 Hz logarithmically, so this is where the
+// ~20 Hz rhythm/pitch boundary lands along the track.
+const BOUNDARY_PCT = (Math.log(20) / Math.log(440)) * 100;
+---
+
+<Layout
+  title="Rhythm to Pitch — NeilGaietto.com"
+  description="Accelerate a just-intonation polyrhythm past 20 Hz and hear two rhythms fuse into a musical interval."
+>
+  <div class="rp-page">
+    <div class="rp-shell">
+      <header class="rp-head">
+        <h1>Rhythm <span class="arrow">→</span> Pitch</h1>
+        <div id="modeBadge" class="rp-badge is-rhythm">Rhythm</div>
+      </header>
+
+      <p class="rp-lede">
+        Two pulse trains locked to a just-intonation ratio. Under ~20 Hz your ear hears a
+        polyrhythm; speed the same ratio past that line and the beats fuse into a musical
+        interval. A 3:2 polyrhythm <em>is</em> a perfect fifth.
+      </p>
+
+      <div class="rp-stage">
+        <canvas id="rings" class="rp-rings" aria-label="Polyrhythm wheel"></canvas>
+        <div class="rp-readouts">
+          <div class="rp-voice va">
+            <div class="rp-voice-head">
+              <span class="rp-dot"></span>
+              <span class="rp-voice-name">Voice A</span>
+              <span class="rp-voice-state" id="stateA"></span>
+            </div>
+            <div class="rp-primary" id="primaryA">120.0 BPM</div>
+            <div class="rp-secondary" id="secondaryA">2.00 claps / sec</div>
+          </div>
+          <div class="rp-voice vb">
+            <div class="rp-voice-head">
+              <span class="rp-dot"></span>
+              <span class="rp-voice-name">Voice B</span>
+              <span class="rp-voice-state" id="stateB"></span>
+            </div>
+            <div class="rp-primary" id="primaryB">180.0 BPM</div>
+            <div class="rp-secondary" id="secondaryB">3.00 claps / sec</div>
+          </div>
+          <div class="rp-interval">
+            <div class="rp-interval-name" id="intervalName">Perfect 5th</div>
+            <div class="rp-interval-sub" id="intervalSub">3:2 · +702¢ · 2 against 3</div>
+          </div>
+        </div>
+      </div>
+
+      <canvas id="strip" class="rp-strip" aria-label="Phase and waveform display"></canvas>
+      <div class="rp-strip-caption" id="stripCaption">Separate clicks on a timeline</div>
+
+      <div class="rp-controls">
+        <div class="rp-row">
+          <button id="startBtn" class="rp-start" type="button">▶ Start engine</button>
+          <div class="rp-vol">
+            <label for="volSlider">Volume</label>
+            <input id="volSlider" type="range" min="0" max="100" value="70" step="1">
+          </div>
+        </div>
+
+        <div class="rp-block">
+          <div class="rp-block-head">
+            <span>Tempo / frequency</span>
+            <span class="rp-value" id="freqLabel">2.00 Hz</span>
+          </div>
+          <div class="rp-slider-wrap">
+            <div class="rp-boundary" style={`left:${BOUNDARY_PCT}%`}></div>
+            <input id="freqSlider" type="range" min="0" max="1000" value="113.9" step="0.1"
+                   aria-label="Pulse frequency">
+          </div>
+          <div class="rp-scale">
+            <span>1 Hz</span>
+            <span class="rp-scale-mark" style={`left:${BOUNDARY_PCT}%`}>20 Hz · rhythm becomes pitch</span>
+            <span>440 Hz</span>
+          </div>
+          <div class="rp-chips">
+            {FREQ_PRESETS.map((p) => (
+              <button class="rp-chip" type="button" data-hz={p.hz} aria-pressed="false">
+                <span class="chip-main">{p.label}</span>
+                <span class="chip-sub">{p.sub}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div class="rp-block">
+          <div class="rp-block-head">
+            <span>Just intonation ratio</span>
+            <span class="rp-value" id="ratioLabel">3:2</span>
+          </div>
+          <div class="rp-chips rp-chips-ratio">
+            {RATIOS.map((r) => (
+              <button class="rp-chip rp-chip-ratio" type="button" aria-pressed="false"
+                      data-num={r.num} data-den={r.den} data-label={r.label}>
+                <span class="chip-main">{r.label}</span>
+                <span class="chip-sub">{r.short}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div class="rp-block">
+          <div class="rp-block-head">
+            <span>Voices</span>
+            <button id="syncBtn" class="rp-mini" type="button">⟲ Sync phase</button>
+          </div>
+          <div class="rp-mix">
+            <div class="rp-mix-row va">
+              <span class="rp-dot"></span>
+              <span class="rp-mix-name">A <em>left</em></span>
+              <button class="rp-toggle" type="button" data-act="mute" data-voice="a" aria-pressed="false">Mute</button>
+              <button class="rp-toggle" type="button" data-act="solo" data-voice="a" aria-pressed="false">Solo</button>
+            </div>
+            <div class="rp-mix-row vb">
+              <span class="rp-dot"></span>
+              <span class="rp-mix-name">B <em>right</em></span>
+              <button class="rp-toggle" type="button" data-act="mute" data-voice="b" aria-pressed="false">Mute</button>
+              <button class="rp-toggle" type="button" data-act="solo" data-voice="b" aria-pressed="false">Solo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <a href="/demos" class="rp-back">← Back to demos</a>
+    </div>
+  </div>
+</Layout>
+
+<style is:global>
+  body {
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    background-color: #05070f !important;
+  }
+</style>
+
+<style>
+  .rp-page {
+    --a: #5ad1ff;
+    --b: #ffb020;
+    --ink: #e8ecf5;
+    --dim: rgba(232, 236, 245, 0.55);
+    --faint: rgba(232, 236, 245, 0.32);
+    --edge: rgba(255, 255, 255, 0.11);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px 12px 40px;
+  }
+
+  .rp-shell {
+    width: 100%;
+    max-width: 720px;
+    background: rgba(4, 7, 20, 0.86);
+    border: 1px solid var(--edge);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      0 0 0 1px rgba(90, 209, 255, 0.1),
+      0 24px 70px rgba(0, 0, 0, 0.7);
+    padding: 22px 22px 18px;
+    color: var(--ink);
+    text-align: left;
+  }
+
+  /* ── Header ── */
+  .rp-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .rp-head h1 {
+    font-size: 1.5em;
+    margin: 0;
+    letter-spacing: 0.01em;
+  }
+
+  .rp-head .arrow {
+    color: var(--a);
+    opacity: 0.8;
+  }
+
+  .rp-badge {
+    font-size: 0.62em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 0.42em 0.85em;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+    transition: color 0.3s, background 0.3s;
+  }
+
+  .rp-badge.is-rhythm { color: var(--a); background: rgba(90, 209, 255, 0.1); }
+  .rp-badge.is-pitch  { color: var(--b); background: rgba(255, 176, 32, 0.12); }
+
+  .rp-lede {
+    font-size: 0.88em;
+    line-height: 1.55;
+    color: var(--dim);
+    margin: 0.7em 0 1.3em;
+  }
+
+  /* ── Stage: wheel + readouts ── */
+  .rp-stage {
+    display: flex;
+    gap: 18px;
+    align-items: stretch;
+  }
+
+  .rp-rings {
+    display: block;
+    width: 260px;
+    height: 260px;
+    flex: 0 0 auto;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--edge);
+  }
+
+  .rp-readouts {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .rp-voice {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--edge);
+    border-radius: 10px;
+    padding: 10px 12px;
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .rp-voice-head {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.68em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .rp-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+  }
+
+  .va .rp-dot { background: var(--a); box-shadow: 0 0 10px var(--a); }
+  .vb .rp-dot { background: var(--b); box-shadow: 0 0 10px var(--b); }
+
+  .rp-voice-state {
+    margin-left: auto;
+    color: var(--b);
+    letter-spacing: 0.1em;
+  }
+
+  .rp-primary {
+    font-size: 1.35em;
+    margin-top: 0.2em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+  }
+
+  .va .rp-primary { color: var(--a); }
+  .vb .rp-primary { color: var(--b); }
+
+  .rp-secondary {
+    font-size: 0.78em;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rp-interval {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--edge);
+    border-radius: 10px;
+    padding: 9px 12px;
+  }
+
+  .rp-interval-name {
+    font-size: 1em;
+  }
+
+  .rp-interval-sub {
+    font-size: 0.75em;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+    margin-top: 0.15em;
+  }
+
+  /* ── Waveform strip ── */
+  .rp-strip {
+    display: block;
+    width: 100%;
+    height: 140px;
+    margin-top: 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--edge);
+  }
+
+  .rp-strip-caption {
+    font-size: 0.72em;
+    color: var(--faint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 7px 2px 0;
+  }
+
+  /* ── Controls ── */
+  .rp-controls {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .rp-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .rp-start {
+    font-family: inherit;
+    font-size: 0.95em;
+    color: #04121a;
+    background: linear-gradient(135deg, var(--a), #9ae6ff);
+    border: none;
+    border-radius: 10px;
+    padding: 0.7em 1.4em;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    box-shadow: 0 6px 22px rgba(90, 209, 255, 0.26);
+    transition: transform 0.12s, box-shadow 0.2s, filter 0.2s;
+  }
+
+  .rp-start:hover { filter: brightness(1.08); }
+  .rp-start:active { transform: translateY(1px); }
+
+  .rp-start.is-running {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--ink);
+    border: 1px solid var(--edge);
+    box-shadow: none;
+  }
+
+  .rp-vol {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex: 1 1 180px;
+    min-width: 160px;
+  }
+
+  .rp-vol label {
+    font-size: 0.7em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .rp-block {
+    border-top: 1px solid var(--edge);
+    padding-top: 13px;
+  }
+
+  .rp-block-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.7em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 10px;
+  }
+
+  .rp-value {
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+  }
+
+  .rp-slider-wrap {
+    position: relative;
+  }
+
+  .rp-boundary {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 2px;
+    margin-left: -1px;
+    background: linear-gradient(to bottom, rgba(255, 176, 32, 0), rgba(255, 176, 32, 0.85), rgba(255, 176, 32, 0));
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .rp-scale {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.66em;
+    color: var(--faint);
+    margin-top: 5px;
+    height: 2.4em;
+  }
+
+  .rp-scale-mark {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    color: rgba(255, 176, 32, 0.8);
+    white-space: nowrap;
+    text-align: center;
+    max-width: 46vw;
+  }
+
+  .rp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .rp-chip {
+    font-family: inherit;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--edge);
+    border-radius: 8px;
+    color: var(--ink);
+    padding: 0.42em 0.7em;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    line-height: 1.2;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .rp-chip:hover { background: rgba(255, 255, 255, 0.1); }
+
+  .rp-chip.is-active {
+    border-color: var(--a);
+    background: rgba(90, 209, 255, 0.14);
+  }
+
+  .chip-main { font-size: 0.76em; }
+  .chip-sub {
+    font-size: 0.66em;
+    color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rp-chip.is-active .chip-sub { color: var(--a); }
+
+  .rp-mini {
+    font-family: inherit;
+    font-size: 1em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--edge);
+    border-radius: 7px;
+    color: var(--dim);
+    padding: 0.4em 0.7em;
+    cursor: pointer;
+  }
+
+  .rp-mini:hover { color: var(--ink); background: rgba(255, 255, 255, 0.1); }
+
+  .rp-mix {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rp-mix-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .rp-mix-name {
+    font-size: 0.8em;
+    min-width: 5.2em;
+  }
+
+  .rp-mix-name em {
+    color: var(--faint);
+    font-size: 0.82em;
+    font-style: normal;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .rp-toggle {
+    font-family: inherit;
+    font-size: 0.7em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--edge);
+    border-radius: 7px;
+    color: var(--dim);
+    padding: 0.45em 0.85em;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+
+  .rp-toggle:hover { background: rgba(255, 255, 255, 0.1); }
+
+  .rp-toggle.is-on {
+    color: #04121a;
+    background: var(--b);
+    border-color: var(--b);
+  }
+
+  /* ── Range inputs ── */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    outline: none;
+    margin: 0;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 3px solid #05070f;
+    box-shadow: 0 0 10px rgba(90, 209, 255, 0.55);
+    cursor: pointer;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 3px solid #05070f;
+    box-shadow: 0 0 10px rgba(90, 209, 255, 0.55);
+    cursor: pointer;
+  }
+
+  .rp-back {
+    display: inline-block;
+    margin-top: 18px;
+    font-size: 0.8em;
+    color: var(--faint);
+    text-decoration: none;
+    font-style: normal;
+    letter-spacing: 0.05em;
+  }
+
+  .rp-back:hover { color: var(--ink); }
+
+  @media (max-width: 620px) {
+    .rp-page { padding: 12px 8px 30px; }
+    .rp-shell { padding: 18px 15px 15px; }
+    .rp-stage { flex-direction: column; align-items: center; }
+    .rp-rings { width: 100%; max-width: 280px; height: auto; aspect-ratio: 1; }
+    .rp-readouts { width: 100%; }
+    .rp-strip { height: 115px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rp-start { transition: none; }
+  }
+</style>
+
+<script>
+// ===========================================================================
+// Rhythm → Pitch
+// A pair of impulse trains locked to a just-intonation ratio. Sweeping their
+// common rate from 1 Hz to 440 Hz walks the same ratio from "polyrhythm" to
+// "musical interval". Everything that needs sample accuracy happens inside an
+// AudioWorklet; the main thread only ever sees ~60 Hz worth of messages.
+// ===========================================================================
+
+// --- Worklet source, compiled at runtime from a Blob URL so the page stays a
+// --- single file with no extra build config. Plain JS: it is never parsed by
+// --- TypeScript, and must avoid template literals so it survives this string.
+const WORKLET_SRC = `
+const TAU_REF = 0.014;   // decay time constant of the slowest pulse, seconds
+const TAU_MIN = 0.0012;  // floor: keeps fast pulses distinct instead of smeared
+const REPORT_EVERY = 6;  // render quanta between phase snapshots (~60 Hz)
+
+function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
+function makeVoice() {
+  // env/envCoef: exponential amplitude decay. low/band: Chamberlin state
+  // variable filter used as a resonant bandpass. op/oi: the tonal part of the
+  // transient. exc: remaining samples of the noise burst that excites it.
+  return { env: 0, envCoef: 0, amp: 0, exc: 0, low: 0, band: 0, f1: 0, q1: 0.42, op: 0, oi: 0 };
+}
+
+class RhythmPitchProcessor extends AudioWorkletProcessor {
+  static get parameterDescriptors() {
+    return [
+      { name: 'freqA', defaultValue: 2, minValue: 0.05, maxValue: 4000, automationRate: 'a-rate' },
+      { name: 'freqB', defaultValue: 3, minValue: 0.05, maxValue: 4000, automationRate: 'a-rate' },
+      { name: 'denom', defaultValue: 2, minValue: 1, maxValue: 64, automationRate: 'k-rate' },
+      { name: 'gainA', defaultValue: 1, minValue: 0, maxValue: 1, automationRate: 'k-rate' },
+      { name: 'gainB', defaultValue: 1, minValue: 0, maxValue: 1, automationRate: 'k-rate' },
+      { name: 'reportPulses', defaultValue: 1, minValue: 0, maxValue: 1, automationRate: 'k-rate' }
+    ];
+  }
+
+  constructor() {
+    super();
+    this.pA = 0;          // voice A phase, 0..1
+    this.pB = 0;          // voice B phase, 0..1
+    this.cycA = 0;        // which A-cycle of the common period we are in
+    this.a = makeVoice();
+    this.b = makeVoice();
+    this.quantum = 0;
+    this.cycHits = 0;
+    this.port.onmessage = function (e) {
+      if (e.data && e.data.type === 'reset') { this.pA = 0; this.pB = 0; this.cycA = 0; }
+    }.bind(this);
+  }
+
+  // Arm one percussive impulse. Faster trains get shorter, quieter pulses so
+  // the perceived loudness stays put as density climbs 400x.
+  fire(v, freq) {
+    var tau = clamp(0.33 / freq, TAU_MIN, TAU_REF);
+    v.envCoef = Math.exp(-1 / (tau * sampleRate));
+    v.env = 1;
+    // A pulse train's RMS goes as amp * sqrt(freq * tau). Holding that
+    // constant gives amp = sqrt(TAU_REF / (freq * tau)) -- which reduces to
+    // the 1/sqrt(freq) rule while tau is still pinned at TAU_REF.
+    v.amp = clamp(Math.sqrt(TAU_REF / (freq * tau)), 0.04, 1);
+    v.exc = Math.max(2, Math.round(0.0012 * sampleRate));
+    var fc = clamp(700 + freq * 1.7, 700, 2600);
+    v.f1 = 2 * Math.sin(Math.PI * fc / sampleRate);
+    v.oi = fc / sampleRate;
+    v.op = 0;
+  }
+
+  renderVoice(v) {
+    if (v.env < 1e-5 && v.exc <= 0) { v.env = 0; return 0; }
+    var exc = 0;
+    if (v.exc > 0) { exc = Math.random() * 2 - 1; v.exc--; }
+    v.low += v.f1 * v.band;
+    var high = exc - v.low - v.q1 * v.band;
+    v.band += v.f1 * high;
+    var tone = Math.sin(6.283185307179586 * v.op);
+    v.op += v.oi;
+    if (v.op >= 1) v.op -= 1;
+    var s = (v.band * 0.9 + tone * 0.45) * v.env * v.amp;
+    v.env *= v.envCoef;
+    return s;
+  }
+
+  process(inputs, outputs, params) {
+    var out = outputs[0];
+    if (!out || out.length === 0) return true;
+    var L = out[0];
+    var R = out.length > 1 ? out[1] : null;
+    var fA = params.freqA, fB = params.freqB;
+    var den = Math.max(1, Math.round(params.denom[0]));
+    if (this.cycA >= den) this.cycA = 0;
+    var gA = params.gainA[0], gB = params.gainB[0];
+    var report = params.reportPulses[0] > 0.5;
+    var n = L.length;
+    var hitA = 0, hitB = 0;
+    var lastA = fA[0], lastB = fB[0];
+
+    for (var i = 0; i < n; i++) {
+      var fa = fA.length > 1 ? fA[i] : fA[0];
+      var fb = fB.length > 1 ? fB[i] : fB[0];
+      lastA = fa; lastB = fb;
+
+      this.pA += fa / sampleRate;
+      if (this.pA >= 1) {
+        this.pA -= 1;
+        this.fire(this.a, fa);
+        hitA++;
+        // The common cycle is counted off A's own wraps rather than integrated
+        // separately, so it cannot drift away from the voice it belongs to.
+        this.cycA++;
+        if (this.cycA >= den) { this.cycA = 0; this.cycHits++; }
+      }
+      this.pB += fb / sampleRate;
+      if (this.pB >= 1) { this.pB -= 1; this.fire(this.b, fb); hitB++; }
+
+      var sa = this.renderVoice(this.a) * gA;
+      var sb = this.renderVoice(this.b) * gB;
+      // Equal-power pan: A ~30% left, B ~30% right.
+      if (R) {
+        L[i] = (sa * 0.852 + sb * 0.523) * 0.42;
+        R[i] = (sa * 0.523 + sb * 0.852) * 0.42;
+      } else {
+        L[i] = (sa + sb) * 0.42;
+      }
+    }
+
+    this.quantum++;
+    // Trigger messages only exist in the rhythm zone, where they top out around
+    // 40/second. Above 20 Hz the main thread drives visuals off phase instead.
+    if (report && (hitA || hitB)) {
+      this.port.postMessage({ type: 'pulse', a: hitA, b: hitB });
+    }
+    if (this.quantum % REPORT_EVERY === 0) {
+      // The phases above are end-of-quantum values while currentTime marks the
+      // quantum's start, so hand out the timestamp they actually belong to.
+      this.port.postMessage({
+        type: 'phase', a: this.pA, b: this.pB,
+        c: (this.cycA + this.pA) / den,
+        fa: lastA, fb: lastB,
+        t: currentTime + n / sampleRate, cyc: this.cycHits
+      });
+      this.cycHits = 0;
+    }
+    return true;
+  }
+}
+
+registerProcessor('rhythm-pitch', RhythmPitchProcessor);
+`;
+
+// ===== Constants =====
+const F_MIN = 1;
+const F_MAX = 440;
+const LOG_SPAN = Math.log(F_MAX / F_MIN);
+const BOUNDARY_HZ = 20;
+const SLIDER_STEPS = 1000;
+const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const COLOR_A = '#5ad1ff';
+const COLOR_B = '#ffb020';
+
+// ===== DOM =====
+function el<T extends HTMLElement>(id: string): T {
+  return document.getElementById(id) as T;
+}
+
+const ringsCanvas = el<HTMLCanvasElement>('rings');
+const stripCanvas = el<HTMLCanvasElement>('strip');
+const rctx = ringsCanvas.getContext('2d')!;
+const sctx = stripCanvas.getContext('2d')!;
+
+const startBtn = el<HTMLButtonElement>('startBtn');
+const syncBtn = el<HTMLButtonElement>('syncBtn');
+const freqSlider = el<HTMLInputElement>('freqSlider');
+const volSlider = el<HTMLInputElement>('volSlider');
+const freqLabel = el<HTMLElement>('freqLabel');
+const ratioLabel = el<HTMLElement>('ratioLabel');
+const modeBadge = el<HTMLElement>('modeBadge');
+const stripCaption = el<HTMLElement>('stripCaption');
+const primaryA = el<HTMLElement>('primaryA');
+const primaryB = el<HTMLElement>('primaryB');
+const secondaryA = el<HTMLElement>('secondaryA');
+const secondaryB = el<HTMLElement>('secondaryB');
+const stateA = el<HTMLElement>('stateA');
+const stateB = el<HTMLElement>('stateB');
+const intervalName = el<HTMLElement>('intervalName');
+const intervalSub = el<HTMLElement>('intervalSub');
+
+const freqChips = Array.from(
+  document.querySelectorAll<HTMLButtonElement>('.rp-chip[data-hz]')
+);
+const ratioChips = Array.from(
+  document.querySelectorAll<HTMLButtonElement>('.rp-chip-ratio')
+);
+const toggles = Array.from(
+  document.querySelectorAll<HTMLButtonElement>('.rp-toggle')
+);
+
+// ===== Audio state =====
+let ctx: AudioContext | null = null;
+let node: AudioWorkletNode | null = null;
+let analyser: AnalyserNode | null = null;
+let master: GainNode | null = null;
+let wave = new Float32Array(0);
+let running = false;
+let booting = false;
+
+// ===== Musical state =====
+let freq = 2;                 // voice A, Hz
+let num = 3;
+let den = 2;
+let ratioName = 'Perfect 5th';
+let muteA = false, muteB = false, soloA = false, soloB = false;
+
+// ===== Visual state =====
+interface Snapshot { a: number; b: number; c: number; t: number; fa: number; fb: number; }
+let snap: Snapshot = { a: 0, b: 0, c: 0, t: 0, fa: 2, fb: 3 };
+let liveA = 2;                // voice frequencies as the worklet last saw them
+let liveB = 3;
+let flashA = 0, flashB = 0, flashC = 0;
+let level = 0;                // smoothed output RMS, drives pitch-mode glow
+let dispPeak = 0.2;           // auto-scale reference for the waveform trace
+let lastFrame = 0;
+let readoutTick = 0;
+let dpr = 1;
+
+// ===== Helpers =====
+function sliderToFreq(t: number): number {
+  return F_MIN * Math.exp((LOG_SPAN * t) / SLIDER_STEPS);
+}
+
+function freqToSlider(f: number): number {
+  return (SLIDER_STEPS * Math.log(f / F_MIN)) / LOG_SPAN;
+}
+
+function isPitch(): boolean {
+  return freq >= BOUNDARY_HZ;
+}
+
+function noteInfo(f: number): { name: string; cents: number } {
+  const midi = 69 + 12 * Math.log2(f / 440);
+  const nearest = Math.round(midi);
+  const cents = Math.round((midi - nearest) * 100);
+  const name = NOTE_NAMES[((nearest % 12) + 12) % 12] + (Math.floor(nearest / 12) - 1);
+  return { name, cents };
+}
+
+function fmtCents(c: number): string {
+  return (c >= 0 ? '+' : '') + c + '¢';
+}
+
+function gainFor(which: 'a' | 'b'): number {
+  if (soloA || soloB) return (which === 'a' ? soloA : soloB) ? 1 : 0;
+  return (which === 'a' ? muteA : muteB) ? 0 : 1;
+}
+
+function freqB(): number {
+  return (freq * num) / den;
+}
+
+// ===== Audio graph =====
+async function buildGraph(): Promise<void> {
+  const AC: typeof AudioContext =
+    window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const c = new AC();
+
+  const url = URL.createObjectURL(new Blob([WORKLET_SRC], { type: 'application/javascript' }));
+  try {
+    await c.audioWorklet.addModule(url);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+
+  const n = new AudioWorkletNode(c, 'rhythm-pitch', {
+    numberOfInputs: 0,
+    numberOfOutputs: 1,
+    outputChannelCount: [2],
+  });
+  n.port.onmessage = onWorkletMessage;
+
+  // Compressor tames the peaks when both voices land on the same sample and
+  // when hundreds of pulses per second start stacking up.
+  const comp = c.createDynamicsCompressor();
+  comp.threshold.value = -14;
+  comp.knee.value = 8;
+  comp.ratio.value = 6;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.12;
+
+  const g = c.createGain();
+  g.gain.value = Number(volSlider.value) / 100;
+
+  const an = c.createAnalyser();
+  an.fftSize = 32768;
+  an.smoothingTimeConstant = 0;
+
+  n.connect(comp);
+  comp.connect(g);
+  g.connect(c.destination);
+  // Tap ahead of the fader so the visuals show the mix, not the listening
+  // level; the analyser is a sink and feeds nothing onward.
+  comp.connect(an);
+
+  ctx = c;
+  node = n;
+  master = g;
+  analyser = an;
+  wave = new Float32Array(an.fftSize);
+
+  pushFreqs(true);
+  pushGains(true);
+}
+
+function onWorkletMessage(e: MessageEvent): void {
+  const d = e.data as {
+    type: string; a: number; b: number;
+    c?: number; t?: number; cyc?: number; fa?: number; fb?: number;
+  };
+  if (d.type === 'pulse') {
+    if (d.a) flashA = 1;
+    if (d.b) flashB = 1;
+  } else if (d.type === 'phase') {
+    snap = {
+      a: d.a, b: d.b, c: d.c ?? 0, t: d.t ?? 0,
+      fa: d.fa ?? freq, fb: d.fb ?? freqB(),
+    };
+    if (d.cyc) flashC = 1;
+  }
+}
+
+function param(name: string): AudioParam | null {
+  return node ? node.parameters.get(name) ?? null : null;
+}
+
+// `glide` ramps instead of jumping, which keeps the sweep musical.
+function pushFreqs(immediate = false): void {
+  if (!ctx || !node) return;
+  const now = ctx.currentTime;
+  const set = (p: AudioParam | null, v: number) => {
+    if (!p) return;
+    p.cancelScheduledValues(now);
+    if (immediate) p.setValueAtTime(v, now);
+    else p.setTargetAtTime(v, now, 0.02);
+  };
+  set(param('freqA'), freq);
+  set(param('freqB'), freqB());
+  // Structural, not audible: it only ever changes alongside a phase reset.
+  const d = param('denom');
+  if (d) d.setValueAtTime(den, now);
+  const rep = param('reportPulses');
+  if (rep) rep.setValueAtTime(isPitch() ? 0 : 1, now);
+}
+
+function pushGains(immediate = false): void {
+  if (!ctx || !node) return;
+  const now = ctx.currentTime;
+  const set = (p: AudioParam | null, v: number) => {
+    if (!p) return;
+    p.cancelScheduledValues(now);
+    if (immediate) p.setValueAtTime(v, now);
+    else p.setTargetAtTime(v, now, 0.012);
+  };
+  set(param('gainA'), gainFor('a'));
+  set(param('gainB'), gainFor('b'));
+}
+
+function resetPhase(): void {
+  if (node) node.port.postMessage({ type: 'reset' });
+  snap = { a: 0, b: 0, c: 0, t: ctx ? ctx.currentTime : 0, fa: freq, fb: freqB() };
+}
+
+async function toggleEngine(): Promise<void> {
+  if (booting) return;
+  if (!ctx) {
+    booting = true;
+    startBtn.textContent = 'Starting…';
+    try {
+      await buildGraph();
+    } catch (err) {
+      startBtn.textContent = 'Audio unavailable';
+      console.error('rhythm-to-pitch: could not start audio engine', err);
+      booting = false;
+      return;
+    }
+    booting = false;
+  }
+  if (!ctx) return;
+  if (running) {
+    await ctx.suspend();
+    running = false;
+  } else {
+    await ctx.resume();
+    resetPhase();
+    running = true;
+  }
+  startBtn.textContent = running ? '❚❚ Stop engine' : '▶ Start engine';
+  startBtn.classList.toggle('is-running', running);
+}
+
+// ===== Phase extrapolation =====
+// The worklet only reports ~60 times a second; between snapshots we advance the
+// phases ourselves from the audio clock, which is what the pitch-mode visuals
+// read instead of a flood of trigger messages.
+function phaseAt(base: number, f: number, dt: number): number {
+  const p = (base + f * dt) % 1;
+  return p < 0 ? p + 1 : p;
+}
+
+// ===== Canvas sizing =====
+function sizeCanvas(cv: HTMLCanvasElement, c2d: CanvasRenderingContext2D): void {
+  const rect = cv.getBoundingClientRect();
+  const w = Math.max(1, Math.round(rect.width));
+  const h = Math.max(1, Math.round(rect.height));
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if (cv.width !== w * dpr || cv.height !== h * dpr) {
+    cv.width = w * dpr;
+    cv.height = h * dpr;
+  }
+  c2d.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+// ===== Polyrhythm wheel =====
+function drawRings(pa: number, pb: number, pc: number): void {
+  sizeCanvas(ringsCanvas, rctx);
+  const w = ringsCanvas.width / dpr;
+  const h = ringsCanvas.height / dpr;
+  const cx = w / 2;
+  const cy = h / 2;
+  const R = Math.min(w, h) / 2 - 10;
+  rctx.clearRect(0, 0, w, h);
+
+  const rWheel = R;
+  const rA = R * 0.72;
+  const rB = R * 0.46;
+
+  // --- Outer wheel: the common cycle. `den` dots for A, `num` dots for B.
+  // Over one turn, A fires den times and B fires num times -- the polyrhythm.
+  ring(cx, cy, rWheel, 'rgba(255,255,255,0.09)', 1);
+
+  // Sweep hand.
+  const sweep = pc * Math.PI * 2 - Math.PI / 2;
+  rctx.save();
+  rctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  rctx.lineWidth = 1;
+  rctx.beginPath();
+  rctx.moveTo(cx, cy);
+  rctx.lineTo(cx + Math.cos(sweep) * rWheel, cy + Math.sin(sweep) * rWheel);
+  rctx.stroke();
+  rctx.restore();
+
+  // A dot lights when the hand has just swept past it. The window is measured
+  // in cycle-fractions so the flash lasts roughly a fixed wall-clock time.
+  const cycleFreq = liveA / den;
+  const flashWindow = Math.min(0.42, Math.max(0.02, 0.22 * cycleFreq));
+  const litness = (u: number) => {
+    let d = (pc - u) % 1;
+    if (d < 0) d += 1;
+    return d < flashWindow ? 1 - d / flashWindow : 0;
+  };
+
+  // Slightly different radii so the shared downbeat shows both dots, not one.
+  for (let k = 0; k < den; k++) {
+    wheelDot(cx, cy, rWheel, k / den, COLOR_A, litness(k / den));
+  }
+  for (let j = 0; j < num; j++) {
+    wheelDot(cx, cy, rWheel - 9, j / num, COLOR_B, litness(j / num));
+  }
+
+  // --- Inner tracks: one marker each, one revolution per voice cycle.
+  track(cx, cy, rA, pa, COLOR_A, flashA);
+  track(cx, cy, rB, pb, COLOR_B, flashB);
+
+  // --- Centre: how often the two trains realign.
+  const align = 0.35 + flashC * 0.65;
+  rctx.save();
+  rctx.textAlign = 'center';
+  rctx.textBaseline = 'middle';
+  rctx.fillStyle = `rgba(232,236,245,${align})`;
+  rctx.font = `600 ${Math.round(R * 0.18)}px Maitree, serif`;
+  rctx.fillText(`${den}:${num}`, cx, cy - R * 0.03);
+  rctx.fillStyle = 'rgba(232,236,245,0.3)';
+  rctx.font = `${Math.round(R * 0.1)}px Maitree, serif`;
+  rctx.fillText('A against B', cx, cy + R * 0.14);
+  rctx.restore();
+}
+
+function ring(cx: number, cy: number, r: number, stroke: string, lw: number): void {
+  rctx.beginPath();
+  rctx.arc(cx, cy, r, 0, Math.PI * 2);
+  rctx.strokeStyle = stroke;
+  rctx.lineWidth = lw;
+  rctx.stroke();
+}
+
+function wheelDot(cx: number, cy: number, r: number, u: number, color: string, lit: number): void {
+  const ang = u * Math.PI * 2 - Math.PI / 2;
+  const x = cx + Math.cos(ang) * r;
+  const y = cy + Math.sin(ang) * r;
+  rctx.save();
+  rctx.beginPath();
+  rctx.arc(x, y, 3 + lit * 3.4, 0, Math.PI * 2);
+  rctx.fillStyle = color;
+  rctx.globalAlpha = 0.45 + lit * 0.55;
+  rctx.shadowColor = color;
+  rctx.shadowBlur = 4 + lit * 16;
+  rctx.fill();
+  rctx.restore();
+}
+
+function track(cx: number, cy: number, r: number, phase: number, color: string, flash: number): void {
+  // Track.
+  rctx.save();
+  rctx.globalAlpha = 0.16 + flash * 0.5;
+  ring(cx, cy, r, color, 1.5 + flash * 2.5);
+  rctx.restore();
+
+  // Home tick at 12 o'clock -- where each cycle begins.
+  rctx.save();
+  rctx.strokeStyle = color;
+  rctx.globalAlpha = 0.45;
+  rctx.lineWidth = 1.5;
+  rctx.beginPath();
+  rctx.moveTo(cx, cy - r - 4);
+  rctx.lineTo(cx, cy - r + 4);
+  rctx.stroke();
+  rctx.restore();
+
+  // Travelling marker.
+  const ang = phase * Math.PI * 2 - Math.PI / 2;
+  const x = cx + Math.cos(ang) * r;
+  const y = cy + Math.sin(ang) * r;
+  rctx.save();
+  rctx.beginPath();
+  rctx.arc(x, y, 3.5 + flash * 4, 0, Math.PI * 2);
+  rctx.fillStyle = color;
+  rctx.shadowColor = color;
+  rctx.shadowBlur = 8 + flash * 20;
+  rctx.fill();
+  rctx.restore();
+}
+
+// ===== Phase / waveform strip =====
+function drawStrip(pa: number, pb: number): void {
+  sizeCanvas(stripCanvas, sctx);
+  const w = stripCanvas.width / dpr;
+  const h = stripCanvas.height / dpr;
+  sctx.clearRect(0, 0, w, h);
+
+  const mid = h * 0.5;
+  sctx.save();
+  sctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  sctx.lineWidth = 1;
+  sctx.beginPath();
+  sctx.moveTo(0, mid);
+  sctx.lineTo(w, mid);
+  sctx.stroke();
+  sctx.restore();
+
+  if (!ctx || !analyser) {
+    sctx.save();
+    sctx.fillStyle = 'rgba(232,236,245,0.28)';
+    sctx.textAlign = 'center';
+    sctx.textBaseline = 'middle';
+    sctx.font = '13px Maitree, serif';
+    sctx.fillText('Start the engine to see the pulse train', w / 2, mid);
+    sctx.restore();
+    return;
+  }
+
+  analyser.getFloatTimeDomainData(wave);
+  const sr = ctx.sampleRate;
+  const bufLen = wave.length;
+
+  // Show ~2.5 cycles once they fit, otherwise as much history as we hold.
+  const maxWin = Math.floor(bufLen * 0.75);
+  const winN = Math.max(64, Math.min(maxWin, Math.round((2.5 / liveA) * sr)));
+  const periodN = sr / liveA;
+
+  // Lock the right edge to the most recent voice-A trigger when there is slack
+  // in the buffer, so fast waveforms sit still instead of shimmering.
+  let end = bufLen;
+  if (periodN < bufLen - winN) {
+    end = bufLen - Math.round((pa / liveA) * sr);
+    if (end < winN) end = winN;
+    if (end > bufLen) end = bufLen;
+  }
+  const start = end - winN;
+  const winSec = winN / sr;
+  // The newest analyser sample trails the audio clock we extrapolate phase
+  // from. Two render quanta is what this measures out to; it only nudges the
+  // tick marks into line with the transients they mark.
+  const ANALYSER_SKEW = 256 / sr;
+  const edgeAgo = (bufLen - end) / sr + ANALYSER_SKEW;
+
+  // --- Waveform. Wide windows get a per-column min/max envelope so transients
+  // survive decimation; narrow ones are drawn as a plain polyline.
+  let peak = 1e-4;
+  for (let i = start; i < end; i += 8) {
+    const v = Math.abs(wave[i]);
+    if (v > peak) peak = v;
+  }
+  // Follow the peak so a sparse 1 Hz clap and a dense 440 Hz tone both fill the
+  // strip; rising fast and falling slowly keeps it from pumping.
+  dispPeak = peak > dispPeak ? peak : dispPeak * 0.92 + peak * 0.08;
+  const amp = (h * 0.36) / Math.max(0.02, dispPeak);
+  let rms = 0;
+  sctx.save();
+  sctx.strokeStyle = 'rgba(232,236,245,0.85)';
+  sctx.lineWidth = 1.25;
+  sctx.beginPath();
+  if (winN >= w) {
+    for (let x = 0; x < w; x++) {
+      const i0 = start + Math.floor((winN * x) / w);
+      const i1 = Math.max(i0 + 1, start + Math.floor((winN * (x + 1)) / w));
+      let mn = Infinity;
+      let mx = -Infinity;
+      for (let i = i0; i < i1; i++) {
+        const v = wave[i];
+        if (v < mn) mn = v;
+        if (v > mx) mx = v;
+        rms += v * v;
+      }
+      sctx.moveTo(x + 0.5, mid - mx * amp);
+      sctx.lineTo(x + 0.5, mid - mn * amp);
+    }
+    rms = Math.sqrt(rms / winN);
+  } else {
+    for (let x = 0; x < w; x++) {
+      const i = start + Math.min(winN - 1, Math.floor((winN * x) / w));
+      const v = wave[i];
+      rms += v * v;
+      if (x === 0) sctx.moveTo(x, mid - v * amp);
+      else sctx.lineTo(x, mid - v * amp);
+    }
+    rms = Math.sqrt(rms / w);
+  }
+  sctx.stroke();
+  sctx.restore();
+  level = level * 0.7 + Math.min(1, rms * 5) * 0.3;
+
+  // --- Trigger ticks, drawn from the extrapolated phases rather than from
+  // audio-rate messages. Watch them crowd together and vanish into the wave.
+  drawTicks(pa, liveA, COLOR_A, h * 0.06, h * 0.2, w, winSec, edgeAgo);
+  drawTicks(pb, liveB, COLOR_B, h * 0.94, h * 0.8, w, winSec, edgeAgo);
+
+  // --- Window length, so the time axis is not a mystery.
+  sctx.save();
+  sctx.fillStyle = 'rgba(232,236,245,0.3)';
+  sctx.font = '10px Maitree, serif';
+  sctx.textAlign = 'right';
+  sctx.textBaseline = 'bottom';
+  sctx.fillText(
+    winSec >= 0.1 ? `${winSec.toFixed(2)} s window` : `${(winSec * 1000).toFixed(1)} ms window`,
+    w - 8,
+    h - 5
+  );
+  sctx.restore();
+}
+
+function drawTicks(
+  phase: number, f: number, color: string,
+  yEdge: number, yTip: number, w: number, winSec: number, edgeAgo: number
+): void {
+  const lag = phase / f; // seconds since that voice last fired
+  sctx.save();
+  sctx.strokeStyle = color;
+  sctx.lineWidth = 1.5;
+  sctx.globalAlpha = 0.75;
+  sctx.beginPath();
+  let drawn = 0;
+  for (let k = 0; k < 600; k++) {
+    const ago = lag + k / f;
+    const xr = 1 - (ago - edgeAgo) / winSec;
+    if (xr < 0) break;
+    if (xr > 1) continue;
+    const x = xr * w;
+    sctx.moveTo(x, yEdge);
+    sctx.lineTo(x, yTip);
+    if (++drawn > 400) break;
+  }
+  sctx.stroke();
+  sctx.restore();
+}
+
+// ===== Readouts =====
+function updateReadouts(): void {
+  const fA = freq;
+  const fB = freqB();
+  const pitch = isPitch();
+
+  freqLabel.textContent = fA < 10 ? `${fA.toFixed(2)} Hz` : `${fA.toFixed(1)} Hz`;
+
+  modeBadge.textContent = pitch ? 'Pitch' : 'Rhythm';
+  modeBadge.classList.toggle('is-pitch', pitch);
+  modeBadge.classList.toggle('is-rhythm', !pitch);
+
+  if (pitch) {
+    const nA = noteInfo(fA);
+    const nB = noteInfo(fB);
+    primaryA.textContent = `${fA.toFixed(1)} Hz`;
+    secondaryA.textContent = `${nA.name} ${fmtCents(nA.cents)}`;
+    primaryB.textContent = `${fB.toFixed(1)} Hz`;
+    secondaryB.textContent = `${nB.name} ${fmtCents(nB.cents)}`;
+    intervalSub.textContent =
+      `${num}:${den} · ${fmtCents(Math.round(1200 * Math.log2(num / den)))} · ${nA.name} + ${nB.name}`;
+    stripCaption.textContent = 'One continuous periodic waveform';
+  } else {
+    primaryA.textContent = `${(fA * 60).toFixed(1)} BPM`;
+    secondaryA.textContent = `${fA.toFixed(2)} claps / sec`;
+    primaryB.textContent = `${(fB * 60).toFixed(1)} BPM`;
+    secondaryB.textContent = `${fB.toFixed(2)} claps / sec`;
+    intervalSub.textContent =
+      `${num}:${den} · ${fmtCents(Math.round(1200 * Math.log2(num / den)))} · ${den} against ${num}`;
+    stripCaption.textContent =
+      fA > 12 ? 'Ticks crowding toward a tone' : 'Separate clicks on a timeline';
+  }
+
+  intervalName.textContent = ratioName;
+  ratioLabel.textContent = `${num}:${den}`;
+
+  const silentA = gainFor('a') === 0;
+  const silentB = gainFor('b') === 0;
+  stateA.textContent = soloA ? 'solo' : silentA ? 'muted' : '';
+  stateB.textContent = soloB ? 'solo' : silentB ? 'muted' : '';
+}
+
+// ===== Frame loop =====
+function frame(ts: number): void {
+  const dt = lastFrame ? Math.min(0.1, (ts - lastFrame) / 1000) : 0.016;
+  lastFrame = ts;
+
+  let pa = 0, pb = 0, pc = 0;
+  if (ctx) {
+    const elapsed = Math.max(0, ctx.currentTime - snap.t);
+    liveA = snap.fa;
+    liveB = snap.fb;
+    pa = phaseAt(snap.a, liveA, elapsed);
+    pb = phaseAt(snap.b, liveB, elapsed);
+    pc = phaseAt(snap.c, liveA / den, elapsed);
+  }
+
+  if (isPitch()) {
+    // Too many triggers per frame to flash individually -- ride the envelope.
+    flashA = gainFor('a') > 0 ? level * 0.8 : 0;
+    flashB = gainFor('b') > 0 ? level * 0.8 : 0;
+    flashC = Math.max(0, flashC - dt * 4);
+  } else {
+    flashA = Math.max(0, flashA - dt * 5);
+    flashB = Math.max(0, flashB - dt * 5);
+    flashC = Math.max(0, flashC - dt * 2.5);
+  }
+
+  drawStrip(pa, pb);
+  drawRings(pa, pb, pc);
+
+  if (++readoutTick % 6 === 0) updateReadouts();
+  requestAnimationFrame(frame);
+}
+
+// ===== Wiring =====
+startBtn.addEventListener('click', () => { void toggleEngine(); });
+syncBtn.addEventListener('click', resetPhase);
+
+freqSlider.addEventListener('input', () => {
+  freq = sliderToFreq(Number(freqSlider.value));
+  pushFreqs();
+  updateReadouts();
+  markActiveFreqChip();
+});
+
+volSlider.addEventListener('input', () => {
+  if (master && ctx) {
+    master.gain.setTargetAtTime(Number(volSlider.value) / 100, ctx.currentTime, 0.02);
+  }
+});
+
+function markActiveFreqChip(): void {
+  for (const chip of freqChips) {
+    const hz = Number(chip.dataset.hz);
+    const on = Math.abs(freq - hz) < hz * 0.02;
+    chip.classList.toggle('is-active', on);
+    chip.setAttribute('aria-pressed', String(on));
+  }
+}
+
+for (const chip of freqChips) {
+  chip.addEventListener('click', () => {
+    freq = Number(chip.dataset.hz);
+    freqSlider.value = String(freqToSlider(freq));
+    pushFreqs();
+    updateReadouts();
+    markActiveFreqChip();
+  });
+}
+
+for (const chip of ratioChips) {
+  chip.addEventListener('click', () => {
+    num = Number(chip.dataset.num);
+    den = Number(chip.dataset.den);
+    ratioName = chip.dataset.label ?? `${num}:${den}`;
+    for (const other of ratioChips) {
+      other.classList.toggle('is-active', other === chip);
+      other.setAttribute('aria-pressed', String(other === chip));
+    }
+    // A new interval means a new common cycle -- restart both trains together.
+    pushFreqs(true);
+    resetPhase();
+    updateReadouts();
+  });
+}
+
+for (const btn of toggles) {
+  btn.addEventListener('click', () => {
+    const voice = btn.dataset.voice as 'a' | 'b';
+    const act = btn.dataset.act;
+    if (act === 'mute') {
+      if (voice === 'a') muteA = !muteA; else muteB = !muteB;
+    } else {
+      if (voice === 'a') soloA = !soloA; else soloB = !soloB;
+    }
+    for (const other of toggles) {
+      const v = other.dataset.voice as 'a' | 'b';
+      const on = other.dataset.act === 'mute'
+        ? (v === 'a' ? muteA : muteB)
+        : (v === 'a' ? soloA : soloB);
+      other.classList.toggle('is-on', on);
+      other.setAttribute('aria-pressed', String(on));
+    }
+    pushGains();
+    updateReadouts();
+  });
+}
+
+window.addEventListener('resize', () => {
+  sizeCanvas(ringsCanvas, rctx);
+  sizeCanvas(stripCanvas, sctx);
+});
+
+// ===== Boot =====
+freq = 2;
+freqSlider.value = String(freqToSlider(freq));
+const defaultRatio = ratioChips.find((c) => c.dataset.num === '3' && c.dataset.den === '2');
+if (defaultRatio) {
+  defaultRatio.classList.add('is-active');
+  defaultRatio.setAttribute('aria-pressed', 'true');
+}
+markActiveFreqChip();
+updateReadouts();
+requestAnimationFrame(frame);
+</script>
