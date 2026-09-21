@@ -101,7 +101,7 @@ const BOUNDARY_PCT = (Math.log(20) / Math.log(440)) * 100;
           </div>
           <div class="rp-chips">
             {FREQ_PRESETS.map((p) => (
-              <button class="rp-chip" type="button" data-hz={p.hz}>
+              <button class="rp-chip" type="button" data-hz={p.hz} aria-pressed="false">
                 <span class="chip-main">{p.label}</span>
                 <span class="chip-sub">{p.sub}</span>
               </button>
@@ -116,7 +116,7 @@ const BOUNDARY_PCT = (Math.log(20) / Math.log(440)) * 100;
           </div>
           <div class="rp-chips rp-chips-ratio">
             {RATIOS.map((r) => (
-              <button class="rp-chip rp-chip-ratio" type="button"
+              <button class="rp-chip rp-chip-ratio" type="button" aria-pressed="false"
                       data-num={r.num} data-den={r.den} data-label={r.label}>
                 <span class="chip-main">{r.label}</span>
                 <span class="chip-sub">{r.short}</span>
@@ -134,14 +134,14 @@ const BOUNDARY_PCT = (Math.log(20) / Math.log(440)) * 100;
             <div class="rp-mix-row va">
               <span class="rp-dot"></span>
               <span class="rp-mix-name">A <em>left</em></span>
-              <button class="rp-toggle" type="button" data-act="mute" data-voice="a">Mute</button>
-              <button class="rp-toggle" type="button" data-act="solo" data-voice="a">Solo</button>
+              <button class="rp-toggle" type="button" data-act="mute" data-voice="a" aria-pressed="false">Mute</button>
+              <button class="rp-toggle" type="button" data-act="solo" data-voice="a" aria-pressed="false">Solo</button>
             </div>
             <div class="rp-mix-row vb">
               <span class="rp-dot"></span>
               <span class="rp-mix-name">B <em>right</em></span>
-              <button class="rp-toggle" type="button" data-act="mute" data-voice="b">Mute</button>
-              <button class="rp-toggle" type="button" data-act="solo" data-voice="b">Solo</button>
+              <button class="rp-toggle" type="button" data-act="mute" data-voice="b" aria-pressed="false">Mute</button>
+              <button class="rp-toggle" type="button" data-act="solo" data-voice="b" aria-pressed="false">Solo</button>
             </div>
           </div>
         </div>
@@ -649,7 +649,7 @@ class RhythmPitchProcessor extends AudioWorkletProcessor {
     return [
       { name: 'freqA', defaultValue: 2, minValue: 0.05, maxValue: 4000, automationRate: 'a-rate' },
       { name: 'freqB', defaultValue: 3, minValue: 0.05, maxValue: 4000, automationRate: 'a-rate' },
-      { name: 'freqC', defaultValue: 1, minValue: 0.001, maxValue: 4000, automationRate: 'k-rate' },
+      { name: 'denom', defaultValue: 2, minValue: 1, maxValue: 64, automationRate: 'k-rate' },
       { name: 'gainA', defaultValue: 1, minValue: 0, maxValue: 1, automationRate: 'k-rate' },
       { name: 'gainB', defaultValue: 1, minValue: 0, maxValue: 1, automationRate: 'k-rate' },
       { name: 'reportPulses', defaultValue: 1, minValue: 0, maxValue: 1, automationRate: 'k-rate' }
@@ -660,13 +660,13 @@ class RhythmPitchProcessor extends AudioWorkletProcessor {
     super();
     this.pA = 0;          // voice A phase, 0..1
     this.pB = 0;          // voice B phase, 0..1
-    this.pC = 0;          // common-cycle phase (one turn of the wheel)
+    this.cycA = 0;        // which A-cycle of the common period we are in
     this.a = makeVoice();
     this.b = makeVoice();
     this.quantum = 0;
     this.cycHits = 0;
     this.port.onmessage = function (e) {
-      if (e.data && e.data.type === 'reset') { this.pA = 0; this.pB = 0; this.pC = 0; }
+      if (e.data && e.data.type === 'reset') { this.pA = 0; this.pB = 0; this.cycA = 0; }
     }.bind(this);
   }
 
@@ -708,22 +708,31 @@ class RhythmPitchProcessor extends AudioWorkletProcessor {
     var L = out[0];
     var R = out.length > 1 ? out[1] : null;
     var fA = params.freqA, fB = params.freqB;
-    var fC = params.freqC[0];
+    var den = Math.max(1, Math.round(params.denom[0]));
+    if (this.cycA >= den) this.cycA = 0;
     var gA = params.gainA[0], gB = params.gainB[0];
     var report = params.reportPulses[0] > 0.5;
     var n = L.length;
     var hitA = 0, hitB = 0;
+    var lastA = fA[0], lastB = fB[0];
 
     for (var i = 0; i < n; i++) {
       var fa = fA.length > 1 ? fA[i] : fA[0];
       var fb = fB.length > 1 ? fB[i] : fB[0];
+      lastA = fa; lastB = fb;
 
       this.pA += fa / sampleRate;
-      if (this.pA >= 1) { this.pA -= 1; this.fire(this.a, fa); hitA++; }
+      if (this.pA >= 1) {
+        this.pA -= 1;
+        this.fire(this.a, fa);
+        hitA++;
+        // The common cycle is counted off A's own wraps rather than integrated
+        // separately, so it cannot drift away from the voice it belongs to.
+        this.cycA++;
+        if (this.cycA >= den) { this.cycA = 0; this.cycHits++; }
+      }
       this.pB += fb / sampleRate;
       if (this.pB >= 1) { this.pB -= 1; this.fire(this.b, fb); hitB++; }
-      this.pC += fC / sampleRate;
-      if (this.pC >= 1) { this.pC -= 1; this.cycHits++; }
 
       var sa = this.renderVoice(this.a) * gA;
       var sb = this.renderVoice(this.b) * gB;
@@ -746,7 +755,9 @@ class RhythmPitchProcessor extends AudioWorkletProcessor {
       // The phases above are end-of-quantum values while currentTime marks the
       // quantum's start, so hand out the timestamp they actually belong to.
       this.port.postMessage({
-        type: 'phase', a: this.pA, b: this.pB, c: this.pC,
+        type: 'phase', a: this.pA, b: this.pB,
+        c: (this.cycA + this.pA) / den,
+        fa: lastA, fb: lastB,
         t: currentTime + n / sampleRate, cyc: this.cycHits
       });
       this.cycHits = 0;
@@ -822,8 +833,10 @@ let ratioName = 'Perfect 5th';
 let muteA = false, muteB = false, soloA = false, soloB = false;
 
 // ===== Visual state =====
-interface Snapshot { a: number; b: number; c: number; t: number; }
-let snap: Snapshot = { a: 0, b: 0, c: 0, t: 0 };
+interface Snapshot { a: number; b: number; c: number; t: number; fa: number; fb: number; }
+let snap: Snapshot = { a: 0, b: 0, c: 0, t: 0, fa: 2, fb: 3 };
+let liveA = 2;                // voice frequencies as the worklet last saw them
+let liveB = 3;
 let flashA = 0, flashB = 0, flashC = 0;
 let level = 0;                // smoothed output RMS, drives pitch-mode glow
 let dispPeak = 0.2;           // auto-scale reference for the waveform trace
@@ -904,7 +917,9 @@ async function buildGraph(): Promise<void> {
   n.connect(comp);
   comp.connect(g);
   g.connect(c.destination);
-  g.connect(an); // tap: analyser is a sink, it does not feed anything onward
+  // Tap ahead of the fader so the visuals show the mix, not the listening
+  // level; the analyser is a sink and feeds nothing onward.
+  comp.connect(an);
 
   ctx = c;
   node = n;
@@ -917,12 +932,18 @@ async function buildGraph(): Promise<void> {
 }
 
 function onWorkletMessage(e: MessageEvent): void {
-  const d = e.data as { type: string; a: number; b: number; c?: number; t?: number; cyc?: number };
+  const d = e.data as {
+    type: string; a: number; b: number;
+    c?: number; t?: number; cyc?: number; fa?: number; fb?: number;
+  };
   if (d.type === 'pulse') {
     if (d.a) flashA = 1;
     if (d.b) flashB = 1;
   } else if (d.type === 'phase') {
-    snap = { a: d.a, b: d.b, c: d.c ?? 0, t: d.t ?? 0 };
+    snap = {
+      a: d.a, b: d.b, c: d.c ?? 0, t: d.t ?? 0,
+      fa: d.fa ?? freq, fb: d.fb ?? freqB(),
+    };
     if (d.cyc) flashC = 1;
   }
 }
@@ -943,8 +964,9 @@ function pushFreqs(immediate = false): void {
   };
   set(param('freqA'), freq);
   set(param('freqB'), freqB());
-  const c = param('freqC');
-  if (c) c.setValueAtTime(freq / den, now);
+  // Structural, not audible: it only ever changes alongside a phase reset.
+  const d = param('denom');
+  if (d) d.setValueAtTime(den, now);
   const rep = param('reportPulses');
   if (rep) rep.setValueAtTime(isPitch() ? 0 : 1, now);
 }
@@ -964,7 +986,7 @@ function pushGains(immediate = false): void {
 
 function resetPhase(): void {
   if (node) node.port.postMessage({ type: 'reset' });
-  snap = { a: 0, b: 0, c: 0, t: ctx ? ctx.currentTime : 0 };
+  snap = { a: 0, b: 0, c: 0, t: ctx ? ctx.currentTime : 0, fa: freq, fb: freqB() };
 }
 
 async function toggleEngine(): Promise<void> {
@@ -1048,7 +1070,7 @@ function drawRings(pa: number, pb: number, pc: number): void {
 
   // A dot lights when the hand has just swept past it. The window is measured
   // in cycle-fractions so the flash lasts roughly a fixed wall-clock time.
-  const cycleFreq = freq / den;
+  const cycleFreq = liveA / den;
   const flashWindow = Math.min(0.42, Math.max(0.02, 0.22 * cycleFreq));
   const litness = (u: number) => {
     let d = (pc - u) % 1;
@@ -1171,14 +1193,14 @@ function drawStrip(pa: number, pb: number): void {
 
   // Show ~2.5 cycles once they fit, otherwise as much history as we hold.
   const maxWin = Math.floor(bufLen * 0.75);
-  const winN = Math.max(64, Math.min(maxWin, Math.round((2.5 / freq) * sr)));
-  const periodN = sr / freq;
+  const winN = Math.max(64, Math.min(maxWin, Math.round((2.5 / liveA) * sr)));
+  const periodN = sr / liveA;
 
   // Lock the right edge to the most recent voice-A trigger when there is slack
   // in the buffer, so fast waveforms sit still instead of shimmering.
   let end = bufLen;
   if (periodN < bufLen - winN) {
-    end = bufLen - Math.round((pa / freq) * sr);
+    end = bufLen - Math.round((pa / liveA) * sr);
     if (end < winN) end = winN;
     if (end > bufLen) end = bufLen;
   }
@@ -1238,8 +1260,8 @@ function drawStrip(pa: number, pb: number): void {
 
   // --- Trigger ticks, drawn from the extrapolated phases rather than from
   // audio-rate messages. Watch them crowd together and vanish into the wave.
-  drawTicks(pa, freq, COLOR_A, h * 0.06, h * 0.2, w, winSec, edgeAgo);
-  drawTicks(pb, freqB(), COLOR_B, h * 0.94, h * 0.8, w, winSec, edgeAgo);
+  drawTicks(pa, liveA, COLOR_A, h * 0.06, h * 0.2, w, winSec, edgeAgo);
+  drawTicks(pb, liveB, COLOR_B, h * 0.94, h * 0.8, w, winSec, edgeAgo);
 
   // --- Window length, so the time axis is not a mystery.
   sctx.save();
@@ -1330,9 +1352,11 @@ function frame(ts: number): void {
   let pa = 0, pb = 0, pc = 0;
   if (ctx) {
     const elapsed = Math.max(0, ctx.currentTime - snap.t);
-    pa = phaseAt(snap.a, freq, elapsed);
-    pb = phaseAt(snap.b, freqB(), elapsed);
-    pc = phaseAt(snap.c, freq / den, elapsed);
+    liveA = snap.fa;
+    liveB = snap.fb;
+    pa = phaseAt(snap.a, liveA, elapsed);
+    pb = phaseAt(snap.b, liveB, elapsed);
+    pc = phaseAt(snap.c, liveA / den, elapsed);
   }
 
   if (isPitch()) {
@@ -1373,7 +1397,9 @@ volSlider.addEventListener('input', () => {
 function markActiveFreqChip(): void {
   for (const chip of freqChips) {
     const hz = Number(chip.dataset.hz);
-    chip.classList.toggle('is-active', Math.abs(freq - hz) < hz * 0.02);
+    const on = Math.abs(freq - hz) < hz * 0.02;
+    chip.classList.toggle('is-active', on);
+    chip.setAttribute('aria-pressed', String(on));
   }
 }
 
@@ -1392,7 +1418,10 @@ for (const chip of ratioChips) {
     num = Number(chip.dataset.num);
     den = Number(chip.dataset.den);
     ratioName = chip.dataset.label ?? `${num}:${den}`;
-    for (const other of ratioChips) other.classList.toggle('is-active', other === chip);
+    for (const other of ratioChips) {
+      other.classList.toggle('is-active', other === chip);
+      other.setAttribute('aria-pressed', String(other === chip));
+    }
     // A new interval means a new common cycle -- restart both trains together.
     pushFreqs(true);
     resetPhase();
@@ -1415,6 +1444,7 @@ for (const btn of toggles) {
         ? (v === 'a' ? muteA : muteB)
         : (v === 'a' ? soloA : soloB);
       other.classList.toggle('is-on', on);
+      other.setAttribute('aria-pressed', String(on));
     }
     pushGains();
     updateReadouts();
@@ -1430,7 +1460,10 @@ window.addEventListener('resize', () => {
 freq = 2;
 freqSlider.value = String(freqToSlider(freq));
 const defaultRatio = ratioChips.find((c) => c.dataset.num === '3' && c.dataset.den === '2');
-if (defaultRatio) defaultRatio.classList.add('is-active');
+if (defaultRatio) {
+  defaultRatio.classList.add('is-active');
+  defaultRatio.setAttribute('aria-pressed', 'true');
+}
 markActiveFreqChip();
 updateReadouts();
 requestAnimationFrame(frame);
