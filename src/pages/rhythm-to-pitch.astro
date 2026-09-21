@@ -681,7 +681,7 @@ class RhythmPitchProcessor extends AudioWorkletProcessor {
     var ps = [];
     for (var i = 0; i < NV; i++) {
       ps.push({
-        name: 'freq' + i, defaultValue: 2, minValue: 0.01, maxValue: 8000,
+        name: 'freq' + i, defaultValue: 2, minValue: 0.005, maxValue: 16000,
         automationRate: 'a-rate'
       });
       ps.push({
@@ -813,6 +813,11 @@ const F_MIN = 1;
 const F_MAX = 440;
 const LOG_SPAN = Math.log(F_MAX / F_MIN);
 const BOUNDARY_HZ = 20;
+// 64:1 over a 440 Hz root asks for 28 kHz, and a 1:64 ratio detuned by -0.05
+// asks for a negative one. Both are clamped here, in the one place the audio
+// and the readouts share, so they can never disagree about what is sounding.
+const F_FLOOR = 0.01;
+const F_CEIL = 12000;
 const SLIDER_STEPS = 1000;
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const COLORS = ['#5ad1ff', '#ffb020', '#b98cff', '#4ee39b'];
@@ -925,8 +930,17 @@ function ratioOf(v: Voice): number {
   return v.num / v.den + v.detune;
 }
 
-function freqOf(i: number): number {
+function rawFreqOf(i: number): number {
   return base * ratioOf(voices[i]);
+}
+
+function freqOf(i: number): number {
+  return Math.min(F_CEIL, Math.max(F_FLOOR, rawFreqOf(i)));
+}
+
+function isClamped(i: number): boolean {
+  const raw = rawFreqOf(i);
+  return raw < F_FLOOR || raw > F_CEIL;
 }
 
 function activeIndices(): number[] {
@@ -935,6 +949,12 @@ function activeIndices(): number[] {
 
 function activeCount(): number {
   return activeIndices().length;
+}
+
+function soundingCount(): number {
+  let n = 0;
+  for (let i = 0; i < N_VOICES; i++) if (gainFor(i) > 0) n++;
+  return n;
 }
 
 function noteInfo(f: number): { name: string; cents: number } {
@@ -1048,36 +1068,44 @@ function param(name: string): AudioParam | null {
   return node ? node.parameters.get(name) ?? null : null;
 }
 
-function setParam(p: AudioParam | null, v: number, immediate: boolean, tc = 0.02): void {
-  if (!p || !ctx) return;
-  const now = ctx.currentTime;
-  p.cancelScheduledValues(now);
-  if (immediate) p.setValueAtTime(v, now);
-  else p.setTargetAtTime(v, now, tc);
+function setParam(
+  p: AudioParam | null, v: number, immediate: boolean, at: number, tc = 0.02
+): void {
+  if (!p) return;
+  p.cancelScheduledValues(at);
+  if (immediate) p.setValueAtTime(v, at);
+  else p.setTargetAtTime(v, at, tc);
 }
 
 function pushFreqs(immediate = false): void {
   if (!ctx || !node) return;
+  // One timestamp for the whole set. Reading ctx.currentTime per voice lets
+  // the clock cross a quantum boundary mid-loop, which starts some glides a
+  // block later than others and leaves a phase offset that outlives the glide.
+  const now = ctx.currentTime;
   for (let i = 0; i < N_VOICES; i++) {
-    setParam(param('freq' + i), Math.max(0.01, freqOf(i)), immediate);
+    setParam(param('freq' + i), freqOf(i), immediate, now);
   }
-  setParam(param('reportPulses'), isPitch() ? 0 : 1, true);
+  setParam(param('reportPulses'), isPitch() ? 0 : 1, true, now);
 }
 
 function pushGains(immediate = false): void {
   if (!ctx || !node) return;
+  const now = ctx.currentTime;
   for (let i = 0; i < N_VOICES; i++) {
-    setParam(param('gain' + i), gainFor(i), immediate, 0.012);
+    setParam(param('gain' + i), gainFor(i), immediate, now, 0.012);
   }
   // Voices add incoherently, so total RMS grows as sqrt(N); back it off by the
-  // same factor and the level holds steady from two voices up to four.
-  setParam(param('voiceScale'), Math.sqrt(2 / Math.max(2, activeCount())), immediate, 0.03);
+  // same factor and the level holds steady from two voices up to four. Count
+  // what is actually sounding, not what is enabled -- otherwise soloing one
+  // voice out of four comes out ~3 dB under soloing it out of two.
+  setParam(param('voiceScale'), Math.sqrt(2 / Math.max(2, soundingCount())), immediate, now, 0.03);
 }
 
 function resetPhase(): void {
   if (node) node.port.postMessage({ type: 'reset' });
   snapP = [0, 0, 0, 0];
-  snapF = voices.map((_, i) => Math.max(0.01, freqOf(i)));
+  snapF = voices.map((_, i) => freqOf(i));
   snapT = ctx ? ctx.currentTime : 0;
   alignFlash = 1;
 }
@@ -1157,8 +1185,11 @@ function drawRings(ph: number[]): void {
   rctx.textAlign = 'center';
   rctx.textBaseline = 'middle';
   rctx.fillStyle = `rgba(232,236,245,${glow})`;
-  rctx.font = `600 ${Math.round(R * 0.15)}px Maitree, serif`;
-  rctx.fillText(chordRatioText(), cx, cy - R * 0.04);
+  const label = chordRatioShort();
+  // Shrink once the ratio gets wordy so it never runs past the inner ring.
+  const fit = Math.min(1, 11 / Math.max(11, label.length));
+  rctx.font = `600 ${Math.round(R * 0.15 * fit)}px Maitree, serif`;
+  rctx.fillText(label, cx, cy - R * 0.04);
   rctx.fillStyle = 'rgba(232,236,245,0.3)';
   rctx.font = `${Math.round(R * 0.088)}px Maitree, serif`;
   rctx.fillText(detuned() ? 'detuned · drifting' : `${n} voices`, cx, cy + R * 0.11);
@@ -1201,15 +1232,36 @@ function track(
   rctx.restore();
 }
 
-function chordRatioText(): string {
+// The chord as whole numbers over a shared root. Coprime denominators can
+// push that into the millions -- accurate but unreadable -- so past a limit
+// fall back to listing each voice's own fraction.
+function chordParts(): number[] {
   const idx = activeIndices();
-  if (!idx.length) return '—';
+  if (!idx.length) return [];
   let d = 1;
   for (const i of idx) d = lcm(d, voices[i].den);
   const parts = idx.map((i) => voices[i].num * (d / voices[i].den));
   let g = 0;
   for (const p of parts) g = gcd(g, p);
-  return parts.map((p) => p / (g || 1)).join(':');
+  return parts.map((p) => p / (g || 1));
+}
+
+function chordRatioText(): string {
+  const idx = activeIndices();
+  if (!idx.length) return '—';
+  const parts = chordParts();
+  if (parts.some((p) => p > 9999)) {
+    return idx.map((i) => `${voices[i].num}:${voices[i].den}`).join(' · ');
+  }
+  return parts.join(':');
+}
+
+// Short enough to sit inside the ring without spilling over the edge.
+function chordRatioShort(): string {
+  const parts = chordParts();
+  if (!parts.length) return '—';
+  if (parts.some((p) => p > 9999)) return 'complex';
+  return parts.join(':');
 }
 
 // ===== Waveform strip =====
@@ -1246,7 +1298,10 @@ function drawStrip(ph: number[]): void {
     return;
   }
 
-  const ref = idx.length ? idx[0] : 0;   // phase-lock to the lowest active voice
+  // Phase-lock to the lowest voice that is actually sounding -- anchoring to
+  // an active-but-muted voice would leave the trace drifting.
+  const audible = idx.filter((i) => gainFor(i) > 0);
+  const ref = audible.length ? audible[0] : idx.length ? idx[0] : 0;
   const refF = Math.max(0.01, live[ref]);
   analyser.getFloatTimeDomainData(wave);
   const sr = ctx.sampleRate;
@@ -1415,14 +1470,21 @@ function updateReadouts(): void {
     const note = noteInfo(Math.max(0.01, f));
     // Every voice shows ratio, Hz, BPM and note; the mode only decides which
     // number gets the big type.
+    const capped = isClamped(i) ? ' · at limit' : '';
+    const rg = gcd(v.num, v.den);
+    const ratioTxt = rg > 1
+      ? `${v.num}:${v.den} = ${v.num / rg}:${v.den / rg}`
+      : `${v.num}:${v.den}`;
     if (pitch) {
       primEls[i].textContent = `${f.toFixed(2)} Hz`;
       secEls[i].textContent =
-        `${note.name} ${fmtCents(note.cents)} · ${(f * 60).toFixed(0)} BPM · ${v.num}:${v.den}`;
+        `${note.name} ${fmtCents(note.cents)} · ${(f * 60).toFixed(0)} BPM · ` +
+        `${ratioTxt}${capped}`;
     } else {
       primEls[i].textContent = `${(f * 60).toFixed(1)} BPM`;
       secEls[i].textContent =
-        `${f.toFixed(3)} Hz · ${note.name} ${fmtCents(note.cents)} · ${v.num}:${v.den}`;
+        `${f.toFixed(3)} Hz · ${note.name} ${fmtCents(note.cents)} · ` +
+        `${ratioTxt}${capped}`;
     }
     detEls[i].textContent = fmtDetune(v.detune);
   }
@@ -1439,9 +1501,14 @@ function updateReadouts(): void {
     cycleInfo.textContent = 'never — detune breaks the lock';
   } else {
     const secs = cyc / base;
-    cycleInfo.textContent =
-      `every ${cyc} root cycles · ` +
-      (secs >= 1 ? `${secs.toFixed(2)} s` : `${(secs * 1000).toFixed(0)} ms`);
+    const when = secs >= 3600
+      ? `${(secs / 3600).toFixed(1)} h`
+      : secs >= 60
+        ? `${(secs / 60).toFixed(1)} min`
+        : secs >= 1
+          ? `${secs.toFixed(2)} s`
+          : `${(secs * 1000).toFixed(0)} ms`;
+    cycleInfo.textContent = `every ${cyc.toLocaleString()} root cycles · ${when}`;
   }
 
   stripCaption.textContent = pitch
@@ -1542,8 +1609,8 @@ function refreshPresetMatch(): void {
     return idx.every((vi, slot) => {
       const v = voices[vi];
       if (v.detune !== 0) return false;
-      const g = gcd(parts[slot], parts[0]);
-      return v.num === parts[slot] / g && v.den === parts[0] / g;
+      // a/b == c/d without reducing either side.
+      return v.num * parts[0] === parts[slot] * v.den;
     });
   });
   markPresetChips(found ?? null);
@@ -1636,12 +1703,18 @@ for (const btn of toggles) {
 for (const input of intInputs) {
   const commit = () => {
     const i = Number(input.dataset.voice);
+    const isNum = input.dataset.part === 'num';
+    const v = voices[i];
+    const current = isNum ? v.num : v.den;
     const n = Math.round(Number(input.value));
     // Out-of-range or non-numeric input snaps back rather than silencing a voice.
     const safe = Number.isFinite(n) ? Math.min(64, Math.max(1, n)) : 1;
-    if (input.dataset.part === 'num') voices[i].num = safe;
-    else voices[i].den = safe;
     input.value = String(safe);
+    // change and blur both land on a real edit, and blur alone lands on a
+    // click-in-click-out. Only an actual change should disturb the phases.
+    if (safe === current) return;
+    if (isNum) v.num = safe;
+    else v.den = safe;
     applyAll(true);
   };
   input.addEventListener('change', commit);
