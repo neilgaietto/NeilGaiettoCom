@@ -1769,7 +1769,13 @@ for (const input of intInputs) {
 }
 
 function setDetune(i: number, d: number): void {
-  voices[i].detune = Number.isFinite(d) ? d : 0;
+  const v = Number.isFinite(d) ? d : 0;
+  voices[i].detune = v;
+  // Own the thumb here rather than at each call site: a reset that updates the
+  // model but not the input leaves the thumb behind, and the next drag then
+  // resurrects the old value.
+  const slider = dtInputs.find((x) => Number(x.dataset.voice) === i);
+  if (slider && slider.value !== String(v)) slider.value = String(v);
   // No phase reset, even on a reset to zero: the voices have already drifted
   // apart, and snapping them back together is what Sync phase is for.
   pushFreqs();
@@ -1790,11 +1796,7 @@ for (const input of dtInputs) {
 
 for (const btn of dtResets) {
   btn.addEventListener('click', () => {
-    const i = Number(btn.dataset.voice);
-    // Match on the voice id rather than DOM order.
-    const slider = dtInputs.find((x) => Number(x.dataset.voice) === i);
-    if (slider) slider.value = '0';
-    setDetune(i, 0);
+    setDetune(Number(btn.dataset.voice), 0);
   });
 }
 
