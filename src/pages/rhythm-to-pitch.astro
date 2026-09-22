@@ -178,11 +178,17 @@ const BOUNDARY_PCT = (Math.log(20) / Math.log(440)) * 100;
                     <input class="rp-int" type="number" min="1" max="64" step="1" value="1"
                            data-part="den" data-voice={v.key} aria-label={`${v.name} denominator`}>
                   </label>
-                  <label class="rp-detune">
-                    <span class="rp-frac-label">Detune <span id={`det${v.key}`}>+0.000</span></span>
-                    <input class="rp-dt" type="range" min="-0.05" max="0.05" step="0.001" value="0"
+                  <div class="rp-detune">
+                    <label class="rp-frac-label" for={`dt${v.key}`}>
+                      Detune <span id={`det${v.key}`}>+0.000</span>
+                    </label>
+                    <input class="rp-dt" id={`dt${v.key}`} type="range"
+                           min="-0.05" max="0.05" step="0.001" value="0"
                            data-voice={v.key} aria-label={`${v.name} detune`}>
-                  </label>
+                    <button class="rp-dtreset" type="button" data-voice={v.key} disabled
+                            aria-label={`Reset ${v.name} detune to zero`}
+                            title="Reset detune to zero">⟲</button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -571,9 +577,28 @@ const BOUNDARY_PCT = (Math.log(20) / Math.log(440)) * 100;
 
   .rp-int:focus { outline: 1px solid var(--vc); }
 
-  .rp-detune { display: flex; align-items: center; gap: 8px; flex: 1 1 170px; min-width: 150px; }
-  .rp-detune input { flex: 1 1 auto; }
+  .rp-detune { display: flex; align-items: center; gap: 8px; flex: 1 1 200px; min-width: 180px; }
+  .rp-detune input[type="range"] { flex: 1 1 auto; }
   .rp-detune .rp-frac-label { white-space: nowrap; }
+
+  .rp-dtreset {
+    font-family: inherit;
+    font-size: 0.85em;
+    line-height: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--edge);
+    border-radius: 6px;
+    color: var(--dim);
+    padding: 0.3em 0.5em;
+    cursor: pointer;
+    flex: 0 0 auto;
+    transition: background 0.15s, color 0.15s, opacity 0.15s;
+  }
+
+  .rp-dtreset:hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); color: var(--ink); }
+
+  /* Nothing to undo at exactly zero, and saying so is the point. */
+  .rp-dtreset:disabled { opacity: 0.25; cursor: default; }
 
   /* ── Range inputs ── */
   input[type="range"] {
@@ -814,10 +839,19 @@ const F_MAX = 440;
 const LOG_SPAN = Math.log(F_MAX / F_MIN);
 const BOUNDARY_HZ = 20;
 // 64:1 over a 440 Hz root asks for 28 kHz, and a 1:64 ratio detuned by -0.05
-// asks for a negative one. Both are clamped here, in the one place the audio
-// and the readouts share, so they can never disagree about what is sounding.
+// asks for a negative one. Both are clamped in freqOf(), the one place the
+// audio and the readouts share, so they can never disagree about what sounds.
+//
+// The ceiling is not a taste call. A pulse train's onsets can only land on
+// sample boundaries, so one sample of jitter is f/sr of a period; and above
+// Nyquist the train cannot be represented at all (22.05 kHz on 44.1 kHz
+// hardware, 24 kHz on 48 kHz). Quarter of the sample rate keeps at least four
+// samples per period and stays clear of the fold-back, and 12 kHz caps it
+// above the top of the musical range (C9 is 8372 Hz) where nothing useful is
+// left anyway.
 const F_FLOOR = 0.01;
-const F_CEIL = 12000;
+const F_CEIL_MAX = 12000;
+let fCeil = F_CEIL_MAX;   // narrowed once the context reports its sample rate
 const SLIDER_STEPS = 1000;
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const COLORS = ['#5ad1ff', '#ffb020', '#b98cff', '#4ee39b'];
@@ -859,6 +893,7 @@ const presetChips = q<HTMLButtonElement>('.rp-chip-preset');
 const toggles = q<HTMLButtonElement>('.rp-toggle');
 const intInputs = q<HTMLInputElement>('.rp-int');
 const dtInputs = q<HTMLInputElement>('.rp-dt');
+const dtResets = q<HTMLButtonElement>('.rp-dtreset');
 const vcards = q<HTMLElement>('.rp-vcard');
 
 // ===== Audio state =====
@@ -935,12 +970,12 @@ function rawFreqOf(i: number): number {
 }
 
 function freqOf(i: number): number {
-  return Math.min(F_CEIL, Math.max(F_FLOOR, rawFreqOf(i)));
+  return Math.min(fCeil, Math.max(F_FLOOR, rawFreqOf(i)));
 }
 
 function isClamped(i: number): boolean {
   const raw = rawFreqOf(i);
-  return raw < F_FLOOR || raw > F_CEIL;
+  return raw < F_FLOOR || raw > fCeil;
 }
 
 function activeIndices(): number[] {
@@ -1042,6 +1077,7 @@ async function buildGraph(): Promise<void> {
   // level; the analyser is a sink and feeds nothing onward.
   comp.connect(an);
 
+  fCeil = Math.min(F_CEIL_MAX, c.sampleRate * 0.25);
   ctx = c;
   node = nd;
   master = g;
@@ -1470,7 +1506,11 @@ function updateReadouts(): void {
     const note = noteInfo(Math.max(0.01, f));
     // Every voice shows ratio, Hz, BPM and note; the mode only decides which
     // number gets the big type.
-    const capped = isClamped(i) ? ' · at limit' : '';
+    const capped = !isClamped(i)
+      ? ''
+      : rawFreqOf(i) > fCeil
+        ? ` · at ${(fCeil / 1000).toFixed(1)} kHz ceiling`
+        : ' · at floor';
     const rg = gcd(v.num, v.den);
     const ratioTxt = rg > 1
       ? `${v.num}:${v.den} = ${v.num / rg}:${v.den / rg}`
@@ -1573,6 +1613,12 @@ function syncToggleUI(): void {
   }
 }
 
+function syncDetuneUI(): void {
+  for (const btn of dtResets) {
+    btn.disabled = voices[Number(btn.dataset.voice)].detune === 0;
+  }
+}
+
 function syncRatioUI(): void {
   for (const input of intInputs) {
     const i = Number(input.dataset.voice);
@@ -1581,6 +1627,7 @@ function syncRatioUI(): void {
   for (const input of dtInputs) {
     input.value = String(voices[Number(input.dataset.voice)].detune);
   }
+  syncDetuneUI();
 }
 
 function markFreqChips(): void {
@@ -1675,7 +1722,7 @@ for (const chip of presetChips) {
       }
     });
     presetName = chip.dataset.label ?? 'Custom ratio';
-    syncRatioUI();
+    syncRatioUI();  // presets zero every detune, so this re-disables the resets
     applyAll(true);
   });
 }
@@ -1721,15 +1768,33 @@ for (const input of intInputs) {
   input.addEventListener('blur', commit);
 }
 
+function setDetune(i: number, d: number): void {
+  voices[i].detune = Number.isFinite(d) ? d : 0;
+  // No phase reset, even on a reset to zero: the voices have already drifted
+  // apart, and snapping them back together is what Sync phase is for.
+  pushFreqs();
+  refreshPresetMatch();
+  syncDetuneUI();
+  updateReadouts();
+}
+
 for (const input of dtInputs) {
   input.addEventListener('input', () => {
-    const i = Number(input.dataset.voice);
-    const d = Number(input.value);
-    voices[i].detune = Number.isFinite(d) ? d : 0;
-    // No phase reset: watching the rings slip apart is the whole point.
-    pushFreqs();
-    refreshPresetMatch();
-    updateReadouts();
+    setDetune(Number(input.dataset.voice), Number(input.value));
+  });
+  // Double-click the slider as a shortcut for the same reset.
+  input.addEventListener('dblclick', () => {
+    setDetune(Number(input.dataset.voice), 0);
+  });
+}
+
+for (const btn of dtResets) {
+  btn.addEventListener('click', () => {
+    const i = Number(btn.dataset.voice);
+    // Match on the voice id rather than DOM order.
+    const slider = dtInputs.find((x) => Number(x.dataset.voice) === i);
+    if (slider) slider.value = '0';
+    setDetune(i, 0);
   });
 }
 
